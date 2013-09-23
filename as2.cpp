@@ -16,6 +16,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <math.h>
+#include "Matrix.h"
+#include "Vector.h"
+#include "main.h"
 
 #define ON 1
 #define OFF 0
