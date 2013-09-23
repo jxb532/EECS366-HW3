@@ -1,14 +1,7 @@
-/* 
- * EECS 366 Assignment # 3
- *
- * Wes Rupert
- * wkr3
- *
- * Joshua Braun
- * jxb532
- *
- * 25 Sept 2013
- */
+/* Wes Rupert - wesrupert@outlook.com (wkr3)  *
+ * Josh Braun - jxb532@case.edu (jxb532)      *
+ * Case Western Reserve University - EECS 366 *
+ * 09/25/2013 - Assignment 3                  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -161,12 +154,10 @@ void meshReader (char *filename,int sign) {
 
 }
 
-
-
 // The display function. It is called whenever the window needs
 // redrawing (ie: overlapping window moves, resize, maximize)
 // You should redraw your polygons here
-void	display(void) {
+void display(void) {
     // Clear the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -223,10 +214,7 @@ void	display(void) {
     glutSwapBuffers();
 }
 
-
-// This function is called whenever the window is resized. 
-// Parameters are the new dimentions of the window
-void	resize(int x,int y) {
+void resize(int x,int y) {
     glViewport(0,0,x,y);
     window_width = x;
     window_height = y;
@@ -240,13 +228,13 @@ void	resize(int x,int y) {
     printf("Resized to %d %d\n",x,y);
 }
 
-void	setRotation(int x, int y) {
+void setRotation(int x, int y) {
 	angleX += (x - lastX) * ROT_SCALE;
 	angleY += (y - lastY) * ROT_SCALE;
 	glutPostRedisplay();
 }
 
-void	setViewDistance(int y) {
+void setViewDistance(int y) {
 	zDist += (y - lastY) * ZOOM_SCALE;
 	zDist = (zDist <= 0.00001) ? 0.00001 : zDist;
 	glutPostRedisplay();
@@ -256,7 +244,7 @@ void	setViewDistance(int y) {
 // button is a number 0 to 2 designating the button
 // state is 1 for release 0 for press event
 // x and y are the location of the mouse (in window-relative coordinates)
-void	mouseButton(int button,int state,int x,int y) {
+void mouseButton(int button,int state,int x,int y) {
 	if (button == RIGHT_BUTTON) {
 		if (state == PRESSED) {
 			RIGHTDOWN = ON;
@@ -276,10 +264,7 @@ void	mouseButton(int button,int state,int x,int y) {
     printf("Mouse click at %d %d, button: %d, state %d\n",x,y,button,state);
 }
 
-
-//This function is called whenever the mouse is moved with a mouse button held down.
-// x and y are the location of the mouse (in window-relative coordinates)
-void	mouseMotion(int x, int y) {
+void mouseMotion(int x, int y) {
 	if (LEFTDOWN == ON) {
 		setRotation(x, y);
 	} else if (RIGHTDOWN == ON) {
@@ -293,7 +278,7 @@ void	mouseMotion(int x, int y) {
 // This function is called whenever there is a keyboard input
 // key is the ASCII value of the key pressed
 // x and y are the location of the mouse
-void	keyboard(unsigned char key, int x, int y) {
+void keyboard(unsigned char key, int x, int y) {
     switch(key) {
     case '':                           /* Quit */
 		exit(1);
@@ -349,8 +334,6 @@ void	keyboard(unsigned char key, int x, int y) {
     glutPostRedisplay();
 }
 
-
-// Here's the main
 int main(int argc, char* argv[]) {
 	
     // Initialize GLUT
@@ -381,3 +364,109 @@ int main(int argc, char* argv[]) {
     glutMainLoop();				// Application does not come back here beyond this point !!
     return 0;        
 }
+
+// TODO: C++ify this
+
+//static float[,] modelMatrix(float[,] r, float[,] p)
+//{
+//	float[,] m = new float[r.GetLength(0) + 1, r.GetLength(1) + 1];
+//	for (int i = 0; i < r.GetLength(0); i++)
+//	{
+//		for (int j = 0; j < r.GetLength(1); j++)
+//		{
+//			m[i, j] = r[i, j];
+//		}
+//		m[i, r.GetLength(1)] = p[i, 0];
+//	}
+//
+//	for (int j = 0; j < m.GetLength(1); j++)
+//	{
+//		m[m.GetLength(0) - 1, j] = 0;
+//	}
+//	m[m.GetLength(0) - 1, m.GetLength(1) - 1] = 1;
+//
+//	return m;
+//}
+//
+//static float[,] viewMatrix(float[,] P, float[] N, float[] V)
+//{
+//	float[,] m = new float[4, 4];
+//
+//	float[] n = mult(mult(N, -1f), 1 / magnitude(N));
+//	float[] u = mult(crossProduct(V, mult(N, -1f)), 1 / magnitude(crossProduct(V, N)));
+//	float[] v = crossProduct(n, u);
+//
+//	for (int i = 0; i < 3; i++)
+//	{
+//		m[0, i] = u[i];
+//		m[1, i] = v[i];
+//		m[2, i] = n[i];
+//		m[3, i] = 0;
+//	}
+//
+//	m[0, 3] = mult(mult(new float[,] { { u[0], u[1], u[2] } }, -1), P)[0, 0];
+//	m[1, 3] = mult(mult(new float[,] { { v[0], v[1], v[2] } }, -1), P)[0, 0];
+//	m[2, 3] = mult(mult(new float[,] { { n[0], n[1], n[2] } }, -1), P)[0, 0];
+//	m[3, 3] = 1;
+//
+//	return m;
+//}
+//
+//enum Axis { X, Y, Z }
+//static float[,] rotateMatrix(float theta, Axis axis, bool appendLastLine = false)
+//{
+//	theta = theta * (float)Math.PI / 180f;
+//
+//	switch (axis)
+//	{
+//		case Axis.X:
+//			if (appendLastLine)
+//				return new float[,] {
+//					{1, 0, 0, 0},
+//					{0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
+//					{0, (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
+//					{0, 0, 0, 1}
+//				};
+//			else
+//				return new float[,] {
+//					{1, 0, 0},
+//					{0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta)},
+//					{0, (float)Math.Sin(theta), (float)Math.Cos(theta)},
+//				};
+//		case Axis.Y:
+//			if (appendLastLine)
+//				return new float[,] {
+//					{(float)Math.Cos(theta), 0, (float)Math.Sin(theta), 0},
+//					{0, 1, 0, 0},
+//					{-1f * (float)Math.Sin(theta), 0, (float)Math.Cos(theta), 0},
+//					{0, 0, 0, 1}
+//				};
+//			else
+//				return new float[,] {
+//					{(float)Math.Cos(theta), 0, (float)Math.Sin(theta)},
+//					{0, 1, 0},
+//					{-1f * (float)Math.Sin(theta), 0, (float)Math.Cos(theta)},
+//				};
+//		case Axis.Z:
+//			if (appendLastLine)
+//				return new float[,] {
+//					{(float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0, 0},
+//					{ (float)Math.Sin(theta), (float)Math.Cos(theta), 0, 0},
+//					{0, 0, 1, 0},
+//					{0, 0, 0, 1}
+//				};
+//			else
+//				return new float[,] {
+//					{(float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
+//					{ (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
+//					{0, 0, 1},
+//				};
+//	}
+//
+//	return null;
+//}
+//
+//static float[,] translateMatrix(float x, float y, float z)
+//{
+//	return new float[,] { { x }, { y }, { z } };
+//}
