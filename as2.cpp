@@ -21,9 +21,15 @@
 #define OFF 0
 #define AXIS_LENGTH 3.0
 #define RIGHT_BUTTON 2
+#define MIDDLE_BUTTON 1
 #define LEFT_BUTTON 0
 #define PRESSED 0
 #define RELEASED 1
+#define TRANSLATE_STEP 5
+#define ROTATE_STEP 5
+#define SCALING_STEP 1
+
+// XXX old
 #define ROT_SCALE 0.3
 #define ZOOM_SCALE 0.02
 
@@ -36,14 +42,27 @@ int AXES = OFF;
 int OBJECTS = ON;
 int LEFTDOWN = OFF;
 int RIGHTDOWN = OFF;
+int MIDDLEDOWN = OFF;
 
-float angleX = 0.0;
-float angleY = 0.0;
-float lastX = 0.0;
-float lastY = 0.0;
-float zDist = 1.0;
+int lastX = 0;
+int lastY = 0;
+float xTrans = 0;
+float yTrans = 0;
+float zTrans = 0;
+float xRotWorld = 0;
+float yRotWorld = 0;
+float zRotWorld = 0;
+float xRotLocal = 0;
+float yRotLocal = 0;
+float zRotLocal = 0;
+float scaling = 1;
+float xViewSwing = 0;
+float yViewSwing = 0;
+float xViewPan = 0;
+float yViewPan = 0;
+float zView = 0;
 
-// Vertex and Face data structure sued in the mesh reader
+// Vertex and Face data structure used in the mesh reader
 // Feel free to change them
 typedef struct _point {
   float x,y,z;
@@ -171,6 +190,7 @@ void	display(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
+	
 
 	if (PERSPECTIVE) {
 		// Set the camera position, orientation and target
@@ -240,15 +260,20 @@ void	resize(int x,int y) {
     printf("Resized to %d %d\n",x,y);
 }
 
-void	setRotation(int x, int y) {
-	angleX += (x - lastX) * ROT_SCALE;
-	angleY += (y - lastY) * ROT_SCALE;
+void	setViewSwing(int x, int y) {
+	// TODO
+	xViewSwing += (x - lastX);
+	yViewSwing += (y - lastY);
+	glutPostRedisplay();
+}
+
+void	setViewPan(int x, int y) {
+	// TODO
 	glutPostRedisplay();
 }
 
 void	setViewDistance(int y) {
-	zDist += (y - lastY) * ZOOM_SCALE;
-	zDist = (zDist <= 0.00001) ? 0.00001 : zDist;
+	// TODO
 	glutPostRedisplay();
 }
 
@@ -262,6 +287,12 @@ void	mouseButton(int button,int state,int x,int y) {
 			RIGHTDOWN = ON;
 		} else {
 			RIGHTDOWN = OFF;
+		}
+	} else if (button == MIDDLE_BUTTON) {
+		if (state == PRESSED) {
+			MIDDLEDOWN = ON;
+		} else {
+			MIDDLEDOWN = OFF;
 		}
 	} else if (button == LEFT_BUTTON) {
 		if (state == PRESSED) {
@@ -281,13 +312,15 @@ void	mouseButton(int button,int state,int x,int y) {
 // x and y are the location of the mouse (in window-relative coordinates)
 void	mouseMotion(int x, int y) {
 	if (LEFTDOWN == ON) {
-		setRotation(x, y);
+		setViewSwing(x, y);
+	} else if (MIDDLEDOWN == ON) {
+		setViewPan(x, y);
 	} else if (RIGHTDOWN == ON) {
 		setViewDistance(y);
 	}
 	lastX = x;
 	lastY = y;
-	printf("Mouse is at %d, %d ; AngleX %f, AngleY %f, zDist %f\n", x,y,angleX,angleY,zDist);
+	printf("Mouse is at %d, %d ; AngleX %f, AngleY %f, zDist %f\n", x,y);
 }
 
 // This function is called whenever there is a keyboard input
@@ -340,6 +373,86 @@ void	keyboard(unsigned char key, int x, int y) {
 	case 'q':
     case 'Q':
 		_exit(0);
+		break;
+	case '4':
+		// negative x translation (world)
+		xTrans -= TRANSLATE_STEP;
+		break;
+	case '6':
+		// poitive x translation (world)
+		xTrans += TRANSLATE_STEP;
+		break;
+	case '2':
+		// negative y translation (world)
+		yTrans -= TRANSLATE_STEP;
+		break;
+	case '8':
+		// positive y translation (world)
+		yTrans += TRANSLATE_STEP;
+		break;
+	case '1':
+		// negative z translation (world)
+		zTrans -= TRANSLATE_STEP;
+		break;
+	case '9':
+		// positive z translation (world)
+		zTrans += TRANSLATE_STEP;
+		break;
+	case '[':
+		// negative x rotation (world)
+		xRotWorld -= ROTATE_STEP;
+		break;
+	case ']':
+		// positive x rotation (world)
+		xRotWorld += ROTATE_STEP;
+		break;
+	case ';':
+		// negative y rotation (world)
+		yRotWorld -= ROTATE_STEP;
+		break;
+	case '\'':
+		// positive y rotation (world)
+		yRotWorld += ROTATE_STEP;
+		break;
+	case '.':
+		// negative z rotation (world)
+		zRotWorld -= ROTATE_STEP;
+		break;
+	case '/':
+		// positive z rotation (world)
+		zRotWorld += ROTATE_STEP;
+		break;
+	case '=':
+		// increase uniform scaling (world)
+		scaling += SCALING_STEP;
+		break;
+	case '-':
+		// decrease uniform scaling (world)
+		scaling -= SCALING_STEP;
+		break;
+	case 'i':
+		// negative x rotation (local)
+		xRotLocal -= ROTATE_STEP;
+		break;
+	case 'o':
+		// poitive x rotation (local)
+		xRotLocal += ROTATE_STEP;
+		break;
+	case 'k':
+		// negative y rotation (local)
+		yRotLocal -= ROTATE_STEP;
+		break;
+	case 'l':
+		// positive y rotation (local)
+		yRotLocal += ROTATE_STEP;
+		break;
+	case 'm':
+		// negative z rotation (local)
+		zRotLocal -= ROTATE_STEP;
+		break;
+	case ',':
+		// positive z rotation (local)
+		zRotLocal += ROTATE_STEP;
 		break;
     default:
 		break;
