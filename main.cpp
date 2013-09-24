@@ -542,8 +542,6 @@ int main(int argc, char* argv[]) {
     return 0;        
 }
 
-// TODO: ++Cify this.
-
 Matrix* modelMatrix(Matrix* r, Matrix* p) {
 	Matrix* temp = new Matrix(r->rows + 1, r->cols + p->cols);
 	for (int i = 0; i < r->rows; ++i) {
@@ -560,29 +558,18 @@ Matrix* modelMatrix(Matrix* r, Matrix* p) {
 Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 	Matrix *m = new Matrix(4,4);
 
-    //float[] n = mult(mult(N, -1f), 1 / magnitude(N));
 	Vector3 *n = *N * (-1.0 / N->magnitude());
-    //float[] u = mult(crossProduct(V, mult(N, -1f)), 1 / magnitude(crossProduct(V, N)));
 	Vector3 *u = (V->cross(*N * -1.0)) * ((V->cross(N))->magnitude);
-    //float[] v = crossProduct(n, u);
 	Vector3 *v = n->cross(v);
 
     for (int i = 0; i < 3; ++i)
     {
-        //m[0, i] = u[i];
-        //m[1, i] = v[i];
-        //m[2, i] = n[i];
-        //m[3, i] = 0;
 		m->set(0, i, u->vector[i]);
 		m->set(1, i, v->vector[i]);
 		m->set(2, i, n->vector[i]);
 		m->set(3, i, 0);
     }
 
-    //m[0, 3] = mult(mult(new float[,] { { u[0], u[1], u[2] } }, -1), P)[0, 0];
-    //m[1, 3] = mult(mult(new float[,] { { v[0], v[1], v[2] } }, -1), P)[0, 0];
-    //m[2, 3] = mult(mult(new float[,] { { n[0], n[1], n[2] } }, -1), P)[0, 0];
-    //m[3, 3] = 1;
 	m->set(0, 3, -1.0 * u->dot(P));
 	m->set(1, 3, -1.0 * v->dot(P));
 	m->set(2, 3, -1.0 * n->dot(P));
@@ -611,7 +598,7 @@ Matrix* rotateMatrix(float thetaDeg, char axis) {
 		return new Matrix(3, 3);
 }
 
-//static float[,] translateMatrix(float x, float y, float z)
-//{
-//    return new float[,] { { x }, { y }, { z } };
-//}
+Matrix* translateMatrix(float x, float y, float z) {
+	float matrix[3] = {x, y, z};
+	return new Matrix(3, 1, matrix);
+}
