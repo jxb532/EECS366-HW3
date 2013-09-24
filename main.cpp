@@ -22,6 +22,8 @@
 
 #define ON 1
 #define OFF 0
+#define ORIGIN 0
+#define OBJECT 1
 #define AXIS_LENGTH 3.0
 #define RIGHT_BUTTON 2
 #define MIDDLE_BUTTON 1
@@ -46,6 +48,8 @@ int OBJECTS = ON;
 int LEFTDOWN = OFF;
 int RIGHTDOWN = OFF;
 int MIDDLEDOWN = OFF;
+int NEEDS_TO_SNAP = ON;
+int SNAP_TO = ORIGIN;
 
 int lastX = 0;
 int lastY = 0;
@@ -63,7 +67,7 @@ float xViewSwing = 0;
 float yViewSwing = 0;
 float xViewPan = 0;
 float yViewPan = 0;
-float zView = 0;
+float zView = 5;
 
 // Vertex and Face data structure used in the mesh reader
 // Feel free to change them
@@ -101,9 +105,9 @@ void meshReader (char *filename,int sign) {
   while(!feof(fp)) {
       fscanf(fp,"%c %f %f %f\n",&letter,&x,&y,&z);
       if (letter == 'v') {
-	  vert++s;
+	  ++verts;
 	} else {
-	  face++s;
+	  ++faces;
 	}
    }
 
@@ -192,17 +196,50 @@ void	display(void) {
     // Clear the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// TODO do we load identity and do all of our rotations/translations every time,
+	// or do we just load the current model/view matrices and apply the most recent transform?
 	glLoadIdentity();
-	
 
 	if (PERSPECTIVE) {
-		// Set the camera position, orientation and target
-		gluLookAt(0,0,zDist, 0,0,0, 0,1,0);
+		// I think this is useless...
 	}
 
-	glRotatef(angleY, 1.0, 0.0, 0.0);
-	glRotatef(angleX, 0.0, 1.0, 0.0);
-	   
+	// we want to modify these matrices
+	// remember that these are in COLUMN MAJOR!!!
+	GLdouble modelMatrix[16];
+	GLdouble projMatrix[16];
+	glGetDoublev(GL_MODELVIEW, modelMatrix);
+	glGetDoublev(GL_PROJECTION, projMatrix);
+
+	// TODO do rotations on modelMatrix
+	//Matrix worldRot (4, 4);
+	//float worldRy[4][4];
+	//Matrix world = rotateMatrix(yRotWorld, 'y');
+
+	// TODO do translations on modelMatrix
+
+	// TODO calculate projection (view) matrix
+	if (NEEDS_TO_SNAP ==  ON) {
+		NEEDS_TO_SNAP = OFF;
+		if (SNAP_TO == ORIGIN) {
+			xViewSwing = 0;
+			yViewSwing = 0;
+			xViewPan = 0;
+			yViewPan = 0;
+			zView = 5;
+		} else {
+			// TODO extract the object's origin from modelMatrix, point camera in that direction
+			// getOriginFromModel(modelMatrix);
+		}
+	}
+
+	float p[3] = {xViewPan, yViewPan, zView};
+	float n[3] = {xViewSwing - xViewPan, yViewSwing - yViewPan, -zView};
+	float v[3] = {0, 1, 0};
+
+	//TODO
+	// viewMatrix(p, n, v);
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	if (OBJECTS == ON) {
@@ -213,11 +250,11 @@ void	display(void) {
 			point vertex;
 			glBegin(GL_POLYGON);
 				vertex = vertList[faceList[i].v1];
-				glVertex3f(vertex.x / zDist, vertex.y / zDist, vertex.z / zDist);
+				glVertex3f(vertex.x, vertex.y, vertex.z);
 				vertex = vertList[faceList[i].v2];
-				glVertex3f(vertex.x / zDist, vertex.y / zDist, vertex.z / zDist);
+				glVertex3f(vertex.x, vertex.y, vertex.z);
 				vertex = vertList[faceList[i].v3];
-				glVertex3f(vertex.x / zDist, vertex.y / zDist, vertex.z / zDist);
+				glVertex3f(vertex.x, vertex.y, vertex.z);
 			glEnd();
 		}
 	}
@@ -225,17 +262,17 @@ void	display(void) {
 	if (AXES == ON) {
 		glColor3f(0,1,0);
 		glBegin(GL_LINES);
-			glVertex3f(AXIS_LENGTH / zDist,0.0,0.0);
+			glVertex3f(AXIS_LENGTH,0.0,0.0);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 		glColor3f(1,0,0);
 		glBegin(GL_LINES);
-			glVertex3f(0.0,AXIS_LENGTH / zDist,0.0);
+			glVertex3f(0.0,AXIS_LENGTH,0.0);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 		glColor3f(0,0,1);
 		glBegin(GL_LINES);
-			glVertex3f(0.0,0.0,AXIS_LENGTH / zDist);
+			glVertex3f(0.0,0.0,AXIS_LENGTH);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 	}
@@ -264,19 +301,19 @@ void	resize(int x,int y) {
 }
 
 void	setViewSwing(int x, int y) {
-	// TODO
 	xViewSwing += (x - lastX);
 	yViewSwing += (y - lastY);
 	glutPostRedisplay();
 }
 
 void	setViewPan(int x, int y) {
-	// TODO
+	xViewPan += (x - lastX);
+	yViewPan += (y - lastY);
 	glutPostRedisplay();
 }
 
 void	setViewDistance(int y) {
-	// TODO
+	zView += (y - lastY);
 	glutPostRedisplay();
 }
 
@@ -457,6 +494,13 @@ void	keyboard(unsigned char key, int x, int y) {
 		// positive z rotation (local)
 		zRotLocal += ROTATE_STEP;
 		break;
+	case 'c':
+		NEEDS_TO_SNAP = ON;
+		if (SNAP_TO == ORIGIN) {
+			SNAP_TO = OBJECT;
+		} else {
+			SNAP_TO = ORIGIN;
+		}
     default:
 		break;
     }
@@ -513,40 +557,62 @@ Matrix* modelMatrix(Matrix* r, Matrix* p) {
 	return temp;
 }
 
-//static float[,] viewMatrix(float[,] P, float[] N, float[] V)
-//{
-//    float[,] m = new float[4, 4];
+Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
+	Matrix *m = new Matrix(4,4);
 
-//    float[] n = mult(mult(N, -1f), 1 / magnitude(N));
-//    float[] u = mult(crossProduct(V, mult(N, -1f)), 1 / magnitude(crossProduct(V, N)));
-//    float[] v = crossProduct(n, u);
+    //float[] n = mult(mult(N, -1f), 1 / magnitude(N));
+	Vector3 *n = *N * (-1.0 / N->magnitude());
+    //float[] u = mult(crossProduct(V, mult(N, -1f)), 1 / magnitude(crossProduct(V, N)));
+	Vector3 *u = (V->cross(*N * -1.0)) * ((V->cross(N))->magnitude);
+    //float[] v = crossProduct(n, u);
+	Vector3 *v = n->cross(v);
 
-//    for (int i = 0; i < 3; ++i)
-//    {
-//        m[0, i] = u[i];
-//        m[1, i] = v[i];
-//        m[2, i] = n[i];
-//        m[3, i] = 0;
-//    }
+    for (int i = 0; i < 3; ++i)
+    {
+        //m[0, i] = u[i];
+        //m[1, i] = v[i];
+        //m[2, i] = n[i];
+        //m[3, i] = 0;
+		m->set(0, i, u->vector[i]);
+		m->set(1, i, v->vector[i]);
+		m->set(2, i, n->vector[i]);
+		m->set(3, i, 0);
+    }
 
-//    m[0, 3] = mult(mult(new float[,] { { u[0], u[1], u[2] } }, -1), P)[0, 0];
-//    m[1, 3] = mult(mult(new float[,] { { v[0], v[1], v[2] } }, -1), P)[0, 0];
-//    m[2, 3] = mult(mult(new float[,] { { n[0], n[1], n[2] } }, -1), P)[0, 0];
-//    m[3, 3] = 1;
+    //m[0, 3] = mult(mult(new float[,] { { u[0], u[1], u[2] } }, -1), P)[0, 0];
+    //m[1, 3] = mult(mult(new float[,] { { v[0], v[1], v[2] } }, -1), P)[0, 0];
+    //m[2, 3] = mult(mult(new float[,] { { n[0], n[1], n[2] } }, -1), P)[0, 0];
+    //m[3, 3] = 1;
+	m->set(0, 3, -1.0 * u->dot(P));
+	m->set(1, 3, -1.0 * v->dot(P));
+	m->set(2, 3, -1.0 * n->dot(P));
+	m->set(3, 3, 1.0);
 
-//    return m;
-//}
+    return m;
+}
 
-//enum Axis { X, Y, Z }
+Matrix* rotateMatrix(float thetaDeg, char axis) {
+	Matrix *m = new Matrix(3, 3);
+	float thetaRad = thetaDeg * (3.14159 / 180.0);
+
+	float** matrix = new float*[3];
+
+	switch (axis) {
+	case 'x':
+	case 'X':
+
+}
+
+//enum Axis { X, Y, Z };
 //static float[,] rotateMatrix(float theta, Axis axis, bool appendLastLine = false)
 //{
 //    theta = theta * (float)Math.PI / 180f;
-
+//
 //    switch (axis)
 //    {
 //        case Axis.X:
 //            if (appendLastLine)
-//                return new float[,] {
+//                reutrn new float {
 //                    {1, 0, 0, 0},
 //                    {0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
 //                    {0, (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
