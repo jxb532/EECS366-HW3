@@ -51,6 +51,9 @@ int MIDDLEDOWN = OFF;
 int NEEDS_TO_SNAP = ON;
 int SNAP_TO = ORIGIN;
 
+Matrix *localRot = new Matrix(3, 3);
+Matrix *worldRot = new Matrix(3, 3);
+Vector3 *translation = new Vector3();
 int lastX = 0;
 int lastY = 0;
 float xTrans = 0;
@@ -211,10 +214,32 @@ void	display(void) {
 	glGetDoublev(GL_MODELVIEW, modelMatrix);
 	glGetDoublev(GL_PROJECTION, projMatrix);
 
+	Matrix *model = new Matrix(4, 4, modelMatrix);
+
 	// TODO do rotations on modelMatrix
-	//Matrix worldRot (4, 4);
-	//float worldRy[4][4];
-	//Matrix world = rotateMatrix(yRotWorld, 'y');
+	//Matrix *Rx = rotateMatrix(xRotWorld, 'x');
+	//Matrix *Ry = rotateMatrix(yRotWorld, 'y');
+	//Matrix *Rz = rotateMatrix(zRotWorld, 'z');
+	//Matrix *Rxo = rotateMatrix(xRotLocal, 'x');
+	//Matrix *Ryo = rotateMatrix(yRotLocal, 'y');
+	//Matrix *Rzo = rotateMatrix(zRotLocal, 'z');
+
+	//Matrix *worldxy = *Rx * *Ry;
+	//Matrix *world = *worldxy * *Rz;
+
+	//Matrix localxy = *Rxo * *Ryo;
+	//Matrix local = *localxy * *Rzo;
+
+
+	//delete Rx; Rx = NULL;
+	//delete Ry; Ry = NULL;
+	//delete Rz; Rz = NULL;
+	//delete Rxo; Rxo = NULL;
+	//delete Ryo; Ryo = NULL;
+	//delete Rzo; Rzo = NULL;
+	//delete model; model = NULL;
+	//delete worldxy; worldxy = NULL;
+	//delete world; world = NULL;
 
 	// TODO do translations on modelMatrix
 
@@ -367,6 +392,7 @@ void	mouseMotion(int x, int y) {
 // key is the ASCII value of the key pressed
 // x and y are the location of the mouse
 void	keyboard(unsigned char key, int x, int y) {
+
     switch(key) {
     case '':                           /* Quit */
 		exit(1);
@@ -416,51 +442,75 @@ void	keyboard(unsigned char key, int x, int y) {
 		break;
 	case '4':
 		// negative x translation (world)
-		xTrans -= TRANSLATE_STEP;
+		translation->vector[0] = translation->vector[0] - TRANSLATE_STEP;
 		break;
 	case '6':
 		// poitive x translation (world)
-		xTrans += TRANSLATE_STEP;
+		translation->vector[0] = translation->vector[0] + TRANSLATE_STEP;
 		break;
 	case '2':
 		// negative y translation (world)
-		yTrans -= TRANSLATE_STEP;
+		translation->vector[1] = translation->vector[1] - TRANSLATE_STEP;
 		break;
 	case '8':
 		// positive y translation (world)
-		yTrans += TRANSLATE_STEP;
+		translation->vector[1] = translation->vector[1] + TRANSLATE_STEP;
 		break;
 	case '1':
 		// negative z translation (world)
-		zTrans -= TRANSLATE_STEP;
+		translation->vector[2] = translation->vector[2] - TRANSLATE_STEP;
 		break;
 	case '9':
 		// positive z translation (world)
-		zTrans += TRANSLATE_STEP;
+		translation->vector[2] = translation->vector[2] + TRANSLATE_STEP;
 		break;
 	case '[':
 		// negative x rotation (world)
-		xRotWorld -= ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'x');
+		Matrix *result = *rotate * *worldRot;
+		delete worldRot;
+		delete rotate;
+		worldRot = result;
 		break;
 	case ']':
 		// positive x rotation (world)
-		xRotWorld += ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'x');
+		Matrix *result = *rotate * *worldRot;
+		delete worldRot;
+		delete rotate;
+		worldRot = result;
 		break;
 	case ';':
 		// negative y rotation (world)
-		yRotWorld -= ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'y');
+		Matrix *result = *rotate * *worldRot;
+		delete worldRot;
+		delete rotate;
+		worldRot = result;
 		break;
 	case '\'':
 		// positive y rotation (world)
-		yRotWorld += ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'y');
+		Matrix *result = *rotate * *worldRot;
+		delete worldRot;
+		delete rotate;
+		worldRot = result;
 		break;
 	case '.':
 		// negative z rotation (world)
-		zRotWorld -= ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'z');
+		Matrix *result = *rotate * *worldRot;
+		delete worldRot;
+		delete rotate;
+		worldRot = result;
 		break;
 	case '/':
 		// positive z rotation (world)
-		zRotWorld += ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'z');
+		Matrix *result = *rotate * *worldRot;
+		delete worldRot;
+		delete rotate;
+		worldRot = result;
 		break;
 	case '=':
 		// increase uniform scaling (world)
@@ -472,27 +522,51 @@ void	keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'i':
 		// negative x rotation (local)
-		xRotLocal -= ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'x');
+		Matrix *result = *localRot * *rotate;
+		delete localRot;
+		delete rotate;
+		localRot = result;
 		break;
 	case 'o':
 		// poitive x rotation (local)
-		xRotLocal += ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'x');
+		Matrix *result = *localRot * *rotate;
+		delete localRot;
+		delete rotate;
+		localRot = result;
 		break;
 	case 'k':
 		// negative y rotation (local)
-		yRotLocal -= ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'y');
+		Matrix *result = *localRot * *rotate;
+		delete localRot;
+		delete rotate;
+		localRot = result;
 		break;
 	case 'l':
 		// positive y rotation (local)
-		yRotLocal += ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'y');
+		Matrix *result = *localRot * *rotate;
+		delete localRot;
+		delete rotate;
+		localRot = result;
 		break;
 	case 'm':
 		// negative z rotation (local)
-		zRotLocal -= ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'z');
+		Matrix *result = *localRot * *rotate;
+		delete localRot;
+		delete rotate;
+		localRot = result;
 		break;
 	case ',':
 		// positive z rotation (local)
-		zRotLocal += ROTATE_STEP;
+		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'z');
+		Matrix *result = *localRot * *rotate;
+		delete localRot;
+		delete rotate;
+		localRot = result;
 		break;
 	case 'c':
 		NEEDS_TO_SNAP = ON;

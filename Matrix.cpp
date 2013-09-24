@@ -18,7 +18,7 @@ Matrix::Matrix(int _rows, int _cols) {
 	for (int i = 0; i < rows; ++i) {
 		matrix[i] = new float[cols];
 		for (int j = 0; j < cols; ++j) {
-			matrix[i][j] = 0;
+			matrix[i][j] = (i == j) ? 1 : 0;
 		}
 	}
 }
