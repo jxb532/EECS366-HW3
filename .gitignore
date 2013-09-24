@@ -5,6 +5,7 @@ _UpgradeReport_Files
 *~
 *.sdf
 *.suo
+*.opensdf
 
 # Object files
 *.o
