@@ -544,26 +544,18 @@ int main(int argc, char* argv[]) {
 
 // TODO: ++Cify this.
 
-//static float[,] modelMatrix(float[,] r, float[,] p)
-//{
-//    float[,] m = new float[r.GetLength(0) + 1, r.GetLength(1) + 1];
-//    for (int i = 0; i < r.GetLength(0); ++i)
-//    {
-//        for (int j = 0; j < r.GetLength(1); ++j)
-//        {
-//            m[i, j] = r[i, j];
-//        }
-//        m[i, r.GetLength(1)] = p[i, 0];
-//    }
-
-//    for (int j = 0; j < m.GetLength(1); ++j)
-//    {
-//        m[m.GetLength(0) - 1, j] = 0;
-//    }
-//    m[m.GetLength(0) - 1, m.GetLength(1) - 1] = 1;
-
-//    return m;
-//}
+Matrix* modelMatrix(Matrix* r, Matrix* p) {
+	Matrix* temp = new Matrix(r->rows + 1, r->cols + p->cols);
+	for (int i = 0; i < r->rows; ++i) {
+		int j;
+		for (j = 0; j < r->cols; ++j) {
+			temp->set(i, j, r->get(i, j));
+		}
+		temp->set(i, j, p->get(i, 0));
+	}
+	temp->set(temp->rows - 1, temp->cols - 1, 1);
+	return temp;
+}
 
 Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 	Matrix *m = new Matrix(4,4);
