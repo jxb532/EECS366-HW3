@@ -3,6 +3,7 @@
  * Case Western Reserve University - EECS 366 *
  * 09/25/2013 - Assignment 3                  */
 
+#include <stdlib.h>
 #include "Matrix.h"
 
 Matrix::Matrix() {
@@ -48,7 +49,16 @@ Matrix::Matrix(int _rows, int _cols, float* _matrix) {
 }
 
 Matrix::~Matrix(void) {
-	delMatrix(rows, cols, matrix);
+	for (int i = 0; i < rows; ++i) {
+		if (matrix[i]) {
+			delete [] matrix[i];
+			matrix[i] = NULL;
+		}
+	}
+	if (matrix) {
+		delete [] matrix;
+		matrix = NULL;
+	}
 }
 
 float Matrix::get(int row, int col) {
@@ -125,11 +135,4 @@ float* Matrix::toArray() {
 		}
 	}
 	return temp;
-}
-
-void Matrix::delMatrix(int rows, int cols, float** m) {
-	for (int i = 0; i < rows; ++i) {
-		if (m[i]) delete [] m[i];
-	}
-	if (m) delete [] m;
 }

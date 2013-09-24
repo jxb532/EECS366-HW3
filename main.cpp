@@ -203,7 +203,7 @@ void	display(void) {
 	glGetDoublev(GL_MODELVIEW, modelviewMatrix);
 	glGetDoublev(GL_PROJECTION, projMatrix);
 
-	float *mod = new float[16];
+	float mod [16];
 	for (int i = 0; i < 16; ++i) {
 		mod[i] = (float)modelviewMatrix[i];
 	}
@@ -212,7 +212,7 @@ void	display(void) {
 	Matrix *worldModel = modelMatrix(worldRot, translation);
 	Matrix *localModel = modelMatrix(localRot, &Vector3(0, 0, 0));
 
-	Matrix *rot1 = *worldModel * *modelviewMatrix;
+	Matrix *rot1 = *worldModel * *model;
 	Matrix *rot2 = *rot1 * *localModel;
 	float *result = rot2->toArray();
 
@@ -572,6 +572,17 @@ void	keyboard(unsigned char key, int x, int y) {
 
 // Here's the main
 int main(int argc, char* argv[]) {
+
+	// WHYYYY???????????
+	float nums [9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	Matrix test (3, 3, nums);
+
+	// OH GOD, THE HUMANITY
+	float nums2 [9] = {1, 4, 7, 2, 5, 8, 3, 6, 9};
+	Matrix test2 (3, 3, nums2);
+
+	Matrix *result = test * test2;
+	delete result; result = NULL;
 	
     // Initialize GLUT
     glutInit(&argc, argv);
@@ -603,7 +614,7 @@ int main(int argc, char* argv[]) {
 }
 
 Matrix* modelMatrix(Matrix* r, Vector3* p) {
-	Matrix* temp = new Matrix(r->rows + 1, r->cols + 3);
+	Matrix* temp = new Matrix(r->rows + 1, r->cols + 1);
 	for (int i = 0; i < r->rows; ++i) {
 		int j;
 		for (j = 0; j < r->cols; ++j) {
