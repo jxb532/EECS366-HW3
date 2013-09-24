@@ -8,15 +8,13 @@
 #pragma once
 class Vector3
 {
-private:
-	
 public:
-	         Vector3(void);
-		     Vector3(float x, float y, float z);
-	         ~Vector3(void);
-	Vector3* operator*(float s);
-	Vector3* cross(Vector3* v);
-	float    dot(Vector3* v);
-	float    magnitude();
-	float vector [LENGTH];
+	        Vector3(void);
+		    Vector3(float x, float y, float z);
+	        ~Vector3(void);
+	Vector3 operator*(float s);
+	Vector3 cross(Vector3* v);
+	float   dot(Vector3* v);
+	float   magnitude();
+	float   vector [LENGTH];
 };

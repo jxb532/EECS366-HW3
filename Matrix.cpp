@@ -89,7 +89,7 @@ Matrix* Matrix::operator*(Matrix m) {
 	for (int i = 0; i < temp->rows; ++i) {
 		for (int j = 0; j < temp->cols; ++j) {
 			temp->matrix[i][j] = 0;
-			for (int k = 0; k < m->rows; ++k) {
+			for (int k = 0; k < m.rows; ++k) {
 				temp->matrix[i][j] += this->matrix[i][k] * m.matrix[k][j];
 			}
 		}
@@ -127,7 +127,7 @@ float* Matrix::toArray() {
 	return temp;
 }
 
-private void delMatrix(int rows, int cols, float** m) {
+void Matrix::delMatrix(int rows, int cols, float** m) {
 	for (int i = 0; i < rows; ++i) {
 		if (m[i]) delete [] m[i];
 	}

@@ -23,15 +23,15 @@ Vector3::~Vector3(void)
 	// shouldn't need to deallocate anything.
 }
 
-Vector3* Vector3::operator*(float s) {
-	return new Vector3(
+Vector3 Vector3::operator*(float s) {
+	return Vector3(
 		this->vector[0] * s,
 		this->vector[1] * s,
 		this->vector[2] * s);
 }
 
-Vector3* Vector3::cross(Vector3* v) {
-	return new Vector3(
+Vector3 Vector3::cross(Vector3* v) {
+	return Vector3(
 		this->vector[1]*v->vector[2]-this->vector[2]*v->vector[1],
 		this->vector[2]*v->vector[0]-this->vector[0]*v->vector[2],
 		this->vector[0]*v->vector[1]-this->vector[1]*v->vector[0]);

@@ -72,17 +72,6 @@ float xViewPan = 0;
 float yViewPan = 0;
 float zView = 5;
 
-// Vertex and Face data structure used in the mesh reader
-// Feel free to change them
-typedef struct _point {
-  float x,y,z;
-} point;
-
-typedef struct _faceStruct {
-  int v1,v2,v3;
-  int n1,n2,n3;
-} faceStruct;
-
 int verts, faces, norms;    // Number of vertices, faces and normals in the system
 point *vertList, *normList; // Vertex and Normal Lists
 faceStruct *faceList;	    // Face List
@@ -214,7 +203,12 @@ void	display(void) {
 	glGetDoublev(GL_MODELVIEW, modelMatrix);
 	glGetDoublev(GL_PROJECTION, projMatrix);
 
-	Matrix *model = new Matrix(4, 4, modelMatrix);
+	float *mod = new float[16];
+	for (int i = 0; i < 16; ++i) {
+		mod[i] = (float)modelMatrix[i];
+	}
+
+	Matrix *model = new Matrix(4, 4, mod);
 
 	// TODO do rotations on modelMatrix
 	//Matrix *Rx = rotateMatrix(xRotWorld, 'x');
@@ -392,6 +386,8 @@ void	mouseMotion(int x, int y) {
 // key is the ASCII value of the key pressed
 // x and y are the location of the mouse
 void	keyboard(unsigned char key, int x, int y) {
+	Matrix *rotate = NULL;
+	Matrix *result = NULL;
 
     switch(key) {
     case '':                           /* Quit */
@@ -466,50 +462,50 @@ void	keyboard(unsigned char key, int x, int y) {
 		break;
 	case '[':
 		// negative x rotation (world)
-		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'x');
-		Matrix *result = *rotate * *worldRot;
-		delete worldRot;
-		delete rotate;
+		rotate = rotateMatrix(-ROTATE_STEP, 'x');
+		result = *rotate * *worldRot;
+		delete worldRot; worldRot = NULL;
+		delete rotate; rotate = NULL;
 		worldRot = result;
 		break;
 	case ']':
 		// positive x rotation (world)
-		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'x');
-		Matrix *result = *rotate * *worldRot;
-		delete worldRot;
-		delete rotate;
+		rotate = rotateMatrix(ROTATE_STEP, 'x');
+		result = *rotate * *worldRot;
+		delete worldRot; worldRot = NULL;
+		delete rotate; rotate = NULL;
 		worldRot = result;
 		break;
 	case ';':
 		// negative y rotation (world)
-		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'y');
-		Matrix *result = *rotate * *worldRot;
-		delete worldRot;
-		delete rotate;
+		rotate = rotateMatrix(-ROTATE_STEP, 'y');
+		result = *rotate * *worldRot;
+		delete worldRot; worldRot = NULL;
+		delete rotate; rotate = NULL;
 		worldRot = result;
 		break;
 	case '\'':
 		// positive y rotation (world)
-		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'y');
-		Matrix *result = *rotate * *worldRot;
-		delete worldRot;
-		delete rotate;
+		rotate = rotateMatrix(ROTATE_STEP, 'y');
+		result = *rotate * *worldRot;
+		delete worldRot; worldRot = NULL;
+		delete rotate; rotate = NULL;
 		worldRot = result;
 		break;
 	case '.':
 		// negative z rotation (world)
-		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'z');
-		Matrix *result = *rotate * *worldRot;
-		delete worldRot;
-		delete rotate;
+		rotate = rotateMatrix(-ROTATE_STEP, 'z');
+		result = *rotate * *worldRot;
+		delete worldRot; worldRot = NULL;
+		delete rotate; rotate = NULL;
 		worldRot = result;
 		break;
 	case '/':
 		// positive z rotation (world)
-		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'z');
-		Matrix *result = *rotate * *worldRot;
-		delete worldRot;
-		delete rotate;
+		rotate = rotateMatrix(ROTATE_STEP, 'z');
+		result = *rotate * *worldRot;
+		delete worldRot; worldRot = NULL;
+		delete rotate; rotate = NULL;
 		worldRot = result;
 		break;
 	case '=':
@@ -522,50 +518,50 @@ void	keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'i':
 		// negative x rotation (local)
-		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'x');
-		Matrix *result = *localRot * *rotate;
-		delete localRot;
-		delete rotate;
+		rotate = rotateMatrix(-ROTATE_STEP, 'x');
+		result = *localRot * *rotate;
+		delete localRot; localRot = NULL;
+		delete rotate; rotate = NULL;
 		localRot = result;
 		break;
 	case 'o':
 		// poitive x rotation (local)
-		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'x');
-		Matrix *result = *localRot * *rotate;
-		delete localRot;
-		delete rotate;
+		rotate = rotateMatrix(ROTATE_STEP, 'x');
+		result = *localRot * *rotate;
+		delete localRot; localRot = NULL;
+		delete rotate; rotate = NULL;
 		localRot = result;
 		break;
 	case 'k':
 		// negative y rotation (local)
-		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'y');
-		Matrix *result = *localRot * *rotate;
-		delete localRot;
-		delete rotate;
+		rotate = rotateMatrix(-ROTATE_STEP, 'y');
+		result = *localRot * *rotate;
+		delete localRot; localRot = NULL;
+		delete rotate; rotate = NULL;
 		localRot = result;
 		break;
 	case 'l':
 		// positive y rotation (local)
-		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'y');
-		Matrix *result = *localRot * *rotate;
-		delete localRot;
-		delete rotate;
+		rotate = rotateMatrix(ROTATE_STEP, 'y');
+		result = *localRot * *rotate;
+		delete localRot; localRot = NULL;
+		delete rotate; rotate = NULL;
 		localRot = result;
 		break;
 	case 'm':
 		// negative z rotation (local)
-		Matrix *rotate = rotateMatrix(-ROTATE_STEP, 'z');
-		Matrix *result = *localRot * *rotate;
-		delete localRot;
-		delete rotate;
+		rotate = rotateMatrix(-ROTATE_STEP, 'z');
+		result = *localRot * *rotate;
+		delete localRot; localRot = NULL;
+		delete rotate; rotate = NULL;
 		localRot = result;
 		break;
 	case ',':
 		// positive z rotation (local)
-		Matrix *rotate = rotateMatrix(ROTATE_STEP, 'z');
-		Matrix *result = *localRot * *rotate;
-		delete localRot;
-		delete rotate;
+		rotate = rotateMatrix(ROTATE_STEP, 'z');
+		result = *localRot * *rotate;
+		delete localRot; localRot = NULL;
+		delete rotate; rotate = NULL;
 		localRot = result;
 		break;
 	case 'c':
@@ -632,21 +628,21 @@ Matrix* modelMatrix(Matrix* r, Matrix* p) {
 Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 	Matrix *m = new Matrix(4,4);
 
-	Vector3 *n = *N * (-1.0 / N->magnitude());
-	Vector3 *u = (V->cross(*N * -1.0)) * ((V->cross(N))->magnitude);
-	Vector3 *v = n->cross(v);
+	Vector3 n = *N * (-1.0 / N->magnitude());
+	Vector3 u = (V->cross(&(*N * -1.0))) * ((V->cross(N)).magnitude());
+	Vector3 v = n.cross(&v);
 
     for (int i = 0; i < 3; ++i)
     {
-		m->set(0, i, u->vector[i]);
-		m->set(1, i, v->vector[i]);
-		m->set(2, i, n->vector[i]);
+		m->set(0, i, u.vector[i]);
+		m->set(1, i, v.vector[i]);
+		m->set(2, i, n.vector[i]);
 		m->set(3, i, 0);
     }
 
-	m->set(0, 3, -1.0 * u->dot(P));
-	m->set(1, 3, -1.0 * v->dot(P));
-	m->set(2, 3, -1.0 * n->dot(P));
+	m->set(0, 3, -1.0 * u.dot(P));
+	m->set(1, 3, -1.0 * v.dot(P));
+	m->set(2, 3, -1.0 * n.dot(P));
 	m->set(3, 3, 1.0);
 
     return m;
@@ -654,22 +650,23 @@ Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 
 Matrix* rotateMatrix(float thetaDeg, char axis) {
 	float thetaRad = thetaDeg * (3.14159 / 180.0);
+	float matrixX[9] = {1, 0, 0, 0, cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad)};
+	float matrixY[9] = {cos(thetaRad), 0, -1.0 * sin(thetaRad), 0, 1, 0, sin(thetaRad), 0, cos(thetaRad)};
+	float matrixZ[9] = {cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad), 0, 0, 1};
 
 	switch (axis) {
 	case 'x':
 	case 'X':
-		float matrix[9] = {1, 0, 0, 0, cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad)};
-		return new Matrix(3, 3, matrix);
+		return new Matrix(3, 3, matrixX);
 	case 'y':
 	case 'Y':
-		float matrix[9] = {cos(thetaRad), 0, -1.0 * sin(thetaRad), 0, 1, 0, sin(thetaRad), 0, cos(thetaRad)};
-		return new Matrix(3, 3, matrix);
+		return new Matrix(3, 3, matrixY);
 	case 'z':
 	case 'Z':
-		float matrix[9] = {cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad), 0, 0, 1};
-		return new Matrix(3, 3, matrix);
+		return new Matrix(3, 3, matrixZ);
 	default:
 		return new Matrix(3, 3);
+	}
 }
 
 Matrix* translateMatrix(float x, float y, float z) {
