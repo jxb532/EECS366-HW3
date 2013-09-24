@@ -198,17 +198,22 @@ void	display(void) {
 
 	// we want to modify these matrices
 	// remember that these are in COLUMN MAJOR!!!
-	GLdouble modelMatrix[16];
+	GLdouble modelviewMatrix[16];
 	GLdouble projMatrix[16];
-	glGetDoublev(GL_MODELVIEW, modelMatrix);
+	glGetDoublev(GL_MODELVIEW, modelviewMatrix);
 	glGetDoublev(GL_PROJECTION, projMatrix);
 
 	float *mod = new float[16];
 	for (int i = 0; i < 16; ++i) {
-		mod[i] = (float)modelMatrix[i];
+		mod[i] = (float)modelviewMatrix[i];
 	}
 
 	Matrix *model = new Matrix(4, 4, mod);
+	Matrix *worldModel = modelMatrix(worldRot, translation);
+	Matrix *localModel = modelMatrix(localRot, &Vector3(0, 0, 0));
+
+	Matrix *rot1 = *worldModel * *modelviewMatrix;
+	Matrix *rot2 = *rot1 * *localModel;
 
 	// TODO do rotations on modelMatrix
 	//Matrix *Rx = rotateMatrix(xRotWorld, 'x');
@@ -231,9 +236,9 @@ void	display(void) {
 	//delete Rxo; Rxo = NULL;
 	//delete Ryo; Ryo = NULL;
 	//delete Rzo; Rzo = NULL;
-	//delete model; model = NULL;
 	//delete worldxy; worldxy = NULL;
 	//delete world; world = NULL;
+	delete model; model = NULL;
 
 	// TODO do translations on modelMatrix
 
