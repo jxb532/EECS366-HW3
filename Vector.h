@@ -3,15 +3,19 @@
  * Case Western Reserve University - EECS 366 *
  * 09/25/2013 - Assignment 3                  */
 
+#define LENGTH 3
+
 #pragma once
-class Vector
+class Vector3
 {
 private:
-	float* vector;
+	float vector [LENGTH];
 public:
-	int    length;
-	       Vector(void);
-	       ~Vector(void);
-	Vector crossProduct(Vector v);
-	float  magnitude();
+	         Vector3(void);
+		     Vector3(float x, float y, float z);
+	         ~Vector3(void);
+	Vector3* operator*(float s);
+	Vector3* cross(Vector3* v);
+	float    dot(Vector3* v);
+	float    magnitude();
 };

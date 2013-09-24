@@ -51,12 +51,13 @@ void Matrix::set(int row, int col, float value) {
 }
 
 Matrix* Matrix::operator*(Matrix* m) {
+	if (this->cols != m->rows) return 0;
 	Matrix * temp = new Matrix(this->rows, m->cols);
 	for (int i = 0; i < temp->rows; i++) {
 		for (int j = 0; j < temp->cols; j++) {
-			temp->set(i, j, 0);
+			temp->matrix[i][j] = 0;
 			for (int k = 0; k < m->rows; k++) {
-				temp->set(i, j, temp->get(i, j) + this->get(i, k) * m->get(k, j)); 
+				temp->matrix[i][j] += this->matrix[i][k] * m->matrix[k][j];
 			}
 		}
 	}
@@ -67,7 +68,7 @@ Matrix* Matrix::operator*(float s) {
 	Matrix* temp = new Matrix(this->rows, this->cols);
 	for (int i = 0; i < temp->rows; i++) {
 		for (int j = 0; j < temp->cols; j++) {
-			temp->set(i, j, temp->get(i, j) * s);
+			temp->matrix[i][j] *= s;
 		}
 	}
 	return temp;
@@ -77,7 +78,7 @@ Matrix* Matrix::transpose() {
 	Matrix* temp = new Matrix(this->rows, this->cols);
 	for (int i = 0; i < temp->rows; i++) {
 		for (int j = 0; j < temp->cols; j++) {
-			temp->set(i, j, this->get(j, i));
+			temp->matrix[i][j] = this->matrix[j][i];
 		}
 	}
 	return temp;
