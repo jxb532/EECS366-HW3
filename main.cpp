@@ -192,17 +192,27 @@ void	display(void) {
     // Clear the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// TODO do we load identity and do all of our rotations/translations every time,
+	// or do we just load the current model/view matrices and apply the most recent transform?
 	glLoadIdentity();
-	
 
 	if (PERSPECTIVE) {
-		// Set the camera position, orientation and target
-		gluLookAt(0,0,zDist, 0,0,0, 0,1,0);
+		// I think this is useless...
 	}
 
-	glRotatef(angleY, 1.0, 0.0, 0.0);
-	glRotatef(angleX, 0.0, 1.0, 0.0);
-	   
+	// we want to modify these matrices
+	// remember that these are in COLUMN MAJOR!!!
+	GLdouble modelMatrix[16];
+	GLdouble projMatrix[16];
+	glGetDoublev(GL_MODELVIEW, modelMatrix);
+	glGetDoublev(GL_PROJECTION, projMatrix);
+
+	// TODO do translations on modelMatrix
+
+	// TODO do rotations on modelMatrix
+
+	// TODO calculate projection (view) matrix
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	if (OBJECTS == ON) {
@@ -213,11 +223,11 @@ void	display(void) {
 			point vertex;
 			glBegin(GL_POLYGON);
 				vertex = vertList[faceList[i].v1];
-				glVertex3f(vertex.x / zDist, vertex.y / zDist, vertex.z / zDist);
+				glVertex3f(vertex.x, vertex.y, vertex.z);
 				vertex = vertList[faceList[i].v2];
-				glVertex3f(vertex.x / zDist, vertex.y / zDist, vertex.z / zDist);
+				glVertex3f(vertex.x, vertex.y, vertex.z);
 				vertex = vertList[faceList[i].v3];
-				glVertex3f(vertex.x / zDist, vertex.y / zDist, vertex.z / zDist);
+				glVertex3f(vertex.x, vertex.y, vertex.z);
 			glEnd();
 		}
 	}
@@ -225,17 +235,17 @@ void	display(void) {
 	if (AXES == ON) {
 		glColor3f(0,1,0);
 		glBegin(GL_LINES);
-			glVertex3f(AXIS_LENGTH / zDist,0.0,0.0);
+			glVertex3f(AXIS_LENGTH,0.0,0.0);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 		glColor3f(1,0,0);
 		glBegin(GL_LINES);
-			glVertex3f(0.0,AXIS_LENGTH / zDist,0.0);
+			glVertex3f(0.0,AXIS_LENGTH,0.0);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 		glColor3f(0,0,1);
 		glBegin(GL_LINES);
-			glVertex3f(0.0,0.0,AXIS_LENGTH / zDist);
+			glVertex3f(0.0,0.0,AXIS_LENGTH);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 	}
