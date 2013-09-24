@@ -84,12 +84,11 @@ Matrix* Matrix::transpose() {
 	return temp;
 }
 
-float** Matrix::toArray() {
-	float** temp = new float*[this->rows];
+float* Matrix::toArray() {
+	float* temp = new float[this->rows * this->cols];
 	for (int i = 0; i < this->rows; ++i) {
-		temp[i] = new float[this->cols];
 		for (int j = 0; j < this->cols; ++j) {
-			temp[i][j] = this->matrix[i][j];
+			temp[i + this->rows * j] = this->matrix[i][j];
 		}
 	}
 	return temp;
