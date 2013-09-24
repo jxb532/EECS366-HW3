@@ -207,9 +207,9 @@ void	display(void) {
 	glGetDoublev(GL_MODELVIEW, modelMatrix);
 	glGetDoublev(GL_PROJECTION, projMatrix);
 
-	// TODO do translations on modelMatrix
-
 	// TODO do rotations on modelMatrix
+
+	// TODO do translations on modelMatrix
 
 	// TODO calculate projection (view) matrix
 
