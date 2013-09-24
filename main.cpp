@@ -214,33 +214,18 @@ void	display(void) {
 
 	Matrix *rot1 = *worldModel * *modelviewMatrix;
 	Matrix *rot2 = *rot1 * *localModel;
+	float *result = rot2->toArray();
 
-	// TODO do rotations on modelMatrix
-	//Matrix *Rx = rotateMatrix(xRotWorld, 'x');
-	//Matrix *Ry = rotateMatrix(yRotWorld, 'y');
-	//Matrix *Rz = rotateMatrix(zRotWorld, 'z');
-	//Matrix *Rxo = rotateMatrix(xRotLocal, 'x');
-	//Matrix *Ryo = rotateMatrix(yRotLocal, 'y');
-	//Matrix *Rzo = rotateMatrix(zRotLocal, 'z');
+	for (int i = 0; i < 16; ++i) {
+		modelviewMatrix[i] = result[i];
+	}
 
-	//Matrix *worldxy = *Rx * *Ry;
-	//Matrix *world = *worldxy * *Rz;
-
-	//Matrix localxy = *Rxo * *Ryo;
-	//Matrix local = *localxy * *Rzo;
-
-
-	//delete Rx; Rx = NULL;
-	//delete Ry; Ry = NULL;
-	//delete Rz; Rz = NULL;
-	//delete Rxo; Rxo = NULL;
-	//delete Ryo; Ryo = NULL;
-	//delete Rzo; Rzo = NULL;
-	//delete worldxy; worldxy = NULL;
-	//delete world; world = NULL;
 	delete model; model = NULL;
-
-	// TODO do translations on modelMatrix
+	delete worldModel; worldModel = NULL;
+	delete localModel; localModel = NULL;
+	delete rot1; rot1 = NULL;
+	delete rot2; rot2 = NULL;
+	delete [] result;
 
 	// TODO calculate projection (view) matrix
 	if (NEEDS_TO_SNAP ==  ON) {
