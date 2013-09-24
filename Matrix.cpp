@@ -83,14 +83,14 @@ void Matrix::append(float* row, float* col) {
 	this->cols += newcol ? 0 : 1;
 }
 
-Matrix* Matrix::operator*(Matrix* m) {
-	if (this->cols != m->rows) return 0;
-	Matrix * temp = new Matrix(this->rows, m->cols);
+Matrix* Matrix::operator*(Matrix m) {
+	if (this->cols != m.rows) return 0;
+	Matrix * temp = new Matrix(this->rows, m.cols);
 	for (int i = 0; i < temp->rows; ++i) {
 		for (int j = 0; j < temp->cols; ++j) {
 			temp->matrix[i][j] = 0;
 			for (int k = 0; k < m->rows; ++k) {
-				temp->matrix[i][j] += this->matrix[i][k] * m->matrix[k][j];
+				temp->matrix[i][j] += this->matrix[i][k] * m.matrix[k][j];
 			}
 		}
 	}
