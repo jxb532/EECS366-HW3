@@ -8,6 +8,7 @@ class Matrix
 {
 private:
 	float** matrix;
+	void    delMatrix(int rows, int cols, float** m);
 public:
 	int     rows;
 	int     cols;
@@ -18,6 +19,7 @@ public:
 	        ~Matrix(void);
 	float   get(int i, int j);
 	void    set(int i, int j, float value);
+	void    append(float* row, float* col);
 	Matrix* operator*(Matrix* m);
 	Matrix* operator*(float s);
 	Matrix* transpose();

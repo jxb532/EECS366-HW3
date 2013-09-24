@@ -48,10 +48,7 @@ Matrix::Matrix(int _rows, int _cols, float* _matrix) {
 }
 
 Matrix::~Matrix(void) {
-	for (int i = 0; i < rows; ++i) {
-		if (matrix[i]) delete [] matrix[i];
-	}
-	if (matrix) delete [] matrix;
+	delMatrix(rows, cols, matrix);
 }
 
 float Matrix::get(int row, int col) {
@@ -60,6 +57,30 @@ float Matrix::get(int row, int col) {
 
 void Matrix::set(int row, int col, float value) {
 	matrix[row][col] = value;
+}
+
+void Matrix::append(float* row, float* col) {
+	bool newrow = row != 0;
+	bool newcol = col != 0;
+	float** temp = new float*[this->rows + newrow ? 0 : 1];
+
+	for (int i = 0; i < this->rows; ++i) {
+		temp[i] = new float[this->cols + newcol ? 0 : 1];
+		for (int j = 0; j < this->cols; ++j) {
+			temp[i][j] = this->matrix[i][j];
+		}
+		if (newcol) temp[i][this->cols] = col[i];
+	}
+
+	if (newrow) {
+		for (int j = 0; j < this->cols; ++j) {
+			temp[this->rows][j] = row[j];
+		}
+		if (newcol) temp[this->rows][this->cols] = row[this->cols];
+	}
+
+	this->rows += newrow ? 0 : 1;
+	this->cols += newcol ? 0 : 1;
 }
 
 Matrix* Matrix::operator*(Matrix* m) {
@@ -104,4 +125,11 @@ float* Matrix::toArray() {
 		}
 	}
 	return temp;
+}
+
+private void delMatrix(int rows, int cols, float** m) {
+	for (int i = 0; i < rows; ++i) {
+		if (m[i]) delete [] m[i];
+	}
+	if (m) delete [] m;
 }
