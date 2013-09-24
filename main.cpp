@@ -542,8 +542,6 @@ int main(int argc, char* argv[]) {
     return 0;        
 }
 
-// TODO: ++Cify this.
-
 Matrix* modelMatrix(Matrix* r, Matrix* p) {
 	Matrix* temp = new Matrix(r->rows + 1, r->cols + p->cols);
 	for (int i = 0; i < r->rows; ++i) {
@@ -560,29 +558,18 @@ Matrix* modelMatrix(Matrix* r, Matrix* p) {
 Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 	Matrix *m = new Matrix(4,4);
 
-    //float[] n = mult(mult(N, -1f), 1 / magnitude(N));
 	Vector3 *n = *N * (-1.0 / N->magnitude());
-    //float[] u = mult(crossProduct(V, mult(N, -1f)), 1 / magnitude(crossProduct(V, N)));
 	Vector3 *u = (V->cross(*N * -1.0)) * ((V->cross(N))->magnitude);
-    //float[] v = crossProduct(n, u);
 	Vector3 *v = n->cross(v);
 
     for (int i = 0; i < 3; ++i)
     {
-        //m[0, i] = u[i];
-        //m[1, i] = v[i];
-        //m[2, i] = n[i];
-        //m[3, i] = 0;
 		m->set(0, i, u->vector[i]);
 		m->set(1, i, v->vector[i]);
 		m->set(2, i, n->vector[i]);
 		m->set(3, i, 0);
     }
 
-    //m[0, 3] = mult(mult(new float[,] { { u[0], u[1], u[2] } }, -1), P)[0, 0];
-    //m[1, 3] = mult(mult(new float[,] { { v[0], v[1], v[2] } }, -1), P)[0, 0];
-    //m[2, 3] = mult(mult(new float[,] { { n[0], n[1], n[2] } }, -1), P)[0, 0];
-    //m[3, 3] = 1;
 	m->set(0, 3, -1.0 * u->dot(P));
 	m->set(1, 3, -1.0 * v->dot(P));
 	m->set(2, 3, -1.0 * n->dot(P));
@@ -592,72 +579,26 @@ Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 }
 
 Matrix* rotateMatrix(float thetaDeg, char axis) {
-	Matrix *m = new Matrix(3, 3);
 	float thetaRad = thetaDeg * (3.14159 / 180.0);
-
-	float** matrix = new float*[3];
 
 	switch (axis) {
 	case 'x':
 	case 'X':
-
+		float matrix[9] = {1, 0, 0, 0, cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad)};
+		return new Matrix(3, 3, matrix);
+	case 'y':
+	case 'Y':
+		float matrix[9] = {cos(thetaRad), 0, -1.0 * sin(thetaRad), 0, 1, 0, sin(thetaRad), 0, cos(thetaRad)};
+		return new Matrix(3, 3, matrix);
+	case 'z':
+	case 'Z':
+		float matrix[9] = {cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad), 0, 0, 1};
+		return new Matrix(3, 3, matrix);
+	default:
+		return new Matrix(3, 3);
 }
 
-//enum Axis { X, Y, Z };
-//static float[,] rotateMatrix(float theta, Axis axis, bool appendLastLine = false)
-//{
-//    theta = theta * (float)Math.PI / 180f;
-//
-//    switch (axis)
-//    {
-//        case Axis.X:
-//            if (appendLastLine)
-//                reutrn new float {
-//                    {1, 0, 0, 0},
-//                    {0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
-//                    {0, (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
-//                    {0, 0, 0, 1}
-//                };
-//            else
-//                return new float[,] {
-//                    {1, 0, 0},
-//                    {0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta)},
-//                    {0, (float)Math.Sin(theta), (float)Math.Cos(theta)},
-//                };
-//        case Axis.Y:
-//            if (appendLastLine)
-//                return new float[,] {
-//                    {(float)Math.Cos(theta), 0, (float)Math.Sin(theta), 0},
-//                    {0, 1, 0, 0},
-//                    {-1f * (float)Math.Sin(theta), 0, (float)Math.Cos(theta), 0},
-//                    {0, 0, 0, 1}
-//                };
-//            else
-//                return new float[,] {
-//                    {(float)Math.Cos(theta), 0, (float)Math.Sin(theta)},
-//                    {0, 1, 0},
-//                    {-1f * (float)Math.Sin(theta), 0, (float)Math.Cos(theta)},
-//                };
-//        case Axis.Z:
-//            if (appendLastLine)
-//                return new float[,] {
-//                    {(float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0, 0},
-//                    { (float)Math.Sin(theta), (float)Math.Cos(theta), 0, 0},
-//                    {0, 0, 1, 0},
-//                    {0, 0, 0, 1}
-//                };
-//            else
-//                return new float[,] {
-//                    {(float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
-//                    { (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
-//                    {0, 0, 1},
-//                };
-//    }
-
-//    return null;
-//}
-
-//static float[,] translateMatrix(float x, float y, float z)
-//{
-//    return new float[,] { { x }, { y }, { z } };
-//}
+Matrix* translateMatrix(float x, float y, float z) {
+	float matrix[3] = {x, y, z};
+	return new Matrix(3, 1, matrix);
+}
