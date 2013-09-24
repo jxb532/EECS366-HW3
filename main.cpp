@@ -612,14 +612,14 @@ int main(int argc, char* argv[]) {
     return 0;        
 }
 
-Matrix* modelMatrix(Matrix* r, Matrix* p) {
-	Matrix* temp = new Matrix(r->rows + 1, r->cols + p->cols);
+Matrix* modelMatrix(Matrix* r, Vector3* p) {
+	Matrix* temp = new Matrix(r->rows + 1, r->cols + 3);
 	for (int i = 0; i < r->rows; ++i) {
 		int j;
 		for (j = 0; j < r->cols; ++j) {
 			temp->set(i, j, r->get(i, j));
 		}
-		temp->set(i, j, p->get(i, 0));
+		temp->set(i, j, p->vector[i]);
 	}
 	temp->set(temp->rows - 1, temp->cols - 1, 1);
 	return temp;
