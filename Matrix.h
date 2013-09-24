@@ -14,6 +14,7 @@ public:
 	        Matrix(void);
 	        Matrix(int _rows, int _cols);
 			Matrix(int _rows, int _cols, float** _matrix);
+			Matrix(int _rows, int _cols, float* _matrix);
 	        ~Matrix(void);
 	float   get(int i, int j);
 	void    set(int i, int j, float value);
