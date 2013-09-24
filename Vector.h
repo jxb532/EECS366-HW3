@@ -9,7 +9,7 @@
 class Vector3
 {
 private:
-	float vector [LENGTH];
+	
 public:
 	         Vector3(void);
 		     Vector3(float x, float y, float z);
@@ -18,4 +18,5 @@ public:
 	Vector3* cross(Vector3* v);
 	float    dot(Vector3* v);
 	float    magnitude();
+	float vector [LENGTH];
 };
