@@ -101,9 +101,9 @@ void meshReader (char *filename,int sign) {
   while(!feof(fp)) {
       fscanf(fp,"%c %f %f %f\n",&letter,&x,&y,&z);
       if (letter == 'v') {
-	  verts++;
+	  vert++s;
 	} else {
-	  faces++;
+	  face++s;
 	}
    }
 
@@ -120,7 +120,7 @@ void meshReader (char *filename,int sign) {
   fp = fopen(filename, "r");
 
   // Read the veritces
-  for(i = 0;i < verts;i++) {
+  for(i = 0;i < verts;++i) {
       fscanf(fp,"%c %f %f %f\n",&letter,&x,&y,&z);
       vertList[i].x = x;
       vertList[i].y = y;
@@ -128,7 +128,7 @@ void meshReader (char *filename,int sign) {
     }
 
   // Read the faces
-  for(i = 0;i < faces;i++) {
+  for(i = 0;i < faces;++i) {
       fscanf(fp,"%c %d %d %d\n",&letter,&ix,&iy,&iz);
       faceList[i].v1 = ix - 1;
       faceList[i].v2 = iy - 1;
@@ -139,12 +139,12 @@ void meshReader (char *filename,int sign) {
 
   // The part below calculates the normals of each vertex
   normCount = (int *)malloc(sizeof(int)*verts);
-  for (i = 0;i < verts;i++) {
+  for (i = 0;i < verts;++i) {
       normList[i].x = normList[i].y = normList[i].z = 0.0;
       normCount[i] = 0;
     }
 
-  for(i = 0;i < faces;i++) {
+  for(i = 0;i < faces;++i) {
       v1.x = vertList[faceList[i].v2].x - vertList[faceList[i].v1].x;
       v1.y = vertList[faceList[i].v2].y - vertList[faceList[i].v1].y;
       v1.z = vertList[faceList[i].v2].z - vertList[faceList[i].v1].z;
@@ -171,11 +171,11 @@ void meshReader (char *filename,int sign) {
       normList[faceList[i].v3].x = normList[faceList[i].v3].x + crossP.x;
       normList[faceList[i].v3].y = normList[faceList[i].v3].y + crossP.y;
       normList[faceList[i].v3].z = normList[faceList[i].v3].z + crossP.z;
-      normCount[faceList[i].v1]++;
-      normCount[faceList[i].v2]++;
-      normCount[faceList[i].v3]++;
+      normCount[faceList[i].v1++];
+      normCount[faceList[i].v2++];
+      normCount[faceList[i].v3++];
     }
-  for (i = 0;i < verts;i++) {
+  for (i = 0;i < verts;++i) {
       normList[i].x = (float)sign*normList[i].x / (float)normCount[i];
       normList[i].y = (float)sign*normList[i].y / (float)normCount[i];
       normList[i].z = (float)sign*normList[i].z / (float)normCount[i];
@@ -209,7 +209,7 @@ void	display(void) {
 		
 		// Draw programatically
 		glColor3f(1, 1, 0);
-		for (int i = 0; i < faces; i++) {
+		for (int i = 0; i < faces; ++i) {
 			point vertex;
 			glBegin(GL_POLYGON);
 				vertex = vertList[faceList[i].v1];
@@ -497,3 +497,109 @@ int main(int argc, char* argv[]) {
     glutMainLoop();				// Application does not come back here beyond this point !!
     return 0;        
 }
+
+// TODO: ++Cify this.
+
+//static float[,] modelMatrix(float[,] r, float[,] p)
+//{
+//    float[,] m = new float[r.GetLength(0) + 1, r.GetLength(1) + 1];
+//    for (int i = 0; i < r.GetLength(0); ++i)
+//    {
+//        for (int j = 0; j < r.GetLength(1); ++j)
+//        {
+//            m[i, j] = r[i, j];
+//        }
+//        m[i, r.GetLength(1)] = p[i, 0];
+//    }
+
+//    for (int j = 0; j < m.GetLength(1); ++j)
+//    {
+//        m[m.GetLength(0) - 1, j] = 0;
+//    }
+//    m[m.GetLength(0) - 1, m.GetLength(1) - 1] = 1;
+
+//    return m;
+//}
+
+//static float[,] viewMatrix(float[,] P, float[] N, float[] V)
+//{
+//    float[,] m = new float[4, 4];
+
+//    float[] n = mult(mult(N, -1f), 1 / magnitude(N));
+//    float[] u = mult(crossProduct(V, mult(N, -1f)), 1 / magnitude(crossProduct(V, N)));
+//    float[] v = crossProduct(n, u);
+
+//    for (int i = 0; i < 3; ++i)
+//    {
+//        m[0, i] = u[i];
+//        m[1, i] = v[i];
+//        m[2, i] = n[i];
+//        m[3, i] = 0;
+//    }
+
+//    m[0, 3] = mult(mult(new float[,] { { u[0], u[1], u[2] } }, -1), P)[0, 0];
+//    m[1, 3] = mult(mult(new float[,] { { v[0], v[1], v[2] } }, -1), P)[0, 0];
+//    m[2, 3] = mult(mult(new float[,] { { n[0], n[1], n[2] } }, -1), P)[0, 0];
+//    m[3, 3] = 1;
+
+//    return m;
+//}
+
+//enum Axis { X, Y, Z }
+//static float[,] rotateMatrix(float theta, Axis axis, bool appendLastLine = false)
+//{
+//    theta = theta * (float)Math.PI / 180f;
+
+//    switch (axis)
+//    {
+//        case Axis.X:
+//            if (appendLastLine)
+//                return new float[,] {
+//                    {1, 0, 0, 0},
+//                    {0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
+//                    {0, (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
+//                    {0, 0, 0, 1}
+//                };
+//            else
+//                return new float[,] {
+//                    {1, 0, 0},
+//                    {0, (float)Math.Cos(theta), -1f * (float)Math.Sin(theta)},
+//                    {0, (float)Math.Sin(theta), (float)Math.Cos(theta)},
+//                };
+//        case Axis.Y:
+//            if (appendLastLine)
+//                return new float[,] {
+//                    {(float)Math.Cos(theta), 0, (float)Math.Sin(theta), 0},
+//                    {0, 1, 0, 0},
+//                    {-1f * (float)Math.Sin(theta), 0, (float)Math.Cos(theta), 0},
+//                    {0, 0, 0, 1}
+//                };
+//            else
+//                return new float[,] {
+//                    {(float)Math.Cos(theta), 0, (float)Math.Sin(theta)},
+//                    {0, 1, 0},
+//                    {-1f * (float)Math.Sin(theta), 0, (float)Math.Cos(theta)},
+//                };
+//        case Axis.Z:
+//            if (appendLastLine)
+//                return new float[,] {
+//                    {(float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0, 0},
+//                    { (float)Math.Sin(theta), (float)Math.Cos(theta), 0, 0},
+//                    {0, 0, 1, 0},
+//                    {0, 0, 0, 1}
+//                };
+//            else
+//                return new float[,] {
+//                    {(float)Math.Cos(theta), -1f * (float)Math.Sin(theta), 0},
+//                    { (float)Math.Sin(theta), (float)Math.Cos(theta), 0},
+//                    {0, 0, 1},
+//                };
+//    }
+
+//    return null;
+//}
+
+//static float[,] translateMatrix(float x, float y, float z)
+//{
+//    return new float[,] { { x }, { y }, { z } };
+//}

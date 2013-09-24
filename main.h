@@ -27,7 +27,7 @@ void   keyboard(unsigned char key, int x, int y);
 int    main(int argc, char* argv[]);
 
 // Graphical matrix generators.
-Matrix modelMatrix(Matrix r, Matrix p);
-Matrix viewMatrix(Matrix P, Vector N, Vector V);
-Matrix rotateMatrix(float theta, char axis);
-Matrix translateMatrix(float x, float y, float z);
+Matrix* modelMatrix(Matrix* r, Matrix* p);
+Matrix* viewMatrix(Matrix* P, Vector3* N, Vector3* V);
+Matrix* rotateMatrix(float theta, char axis);
+Matrix* translateMatrix(float x, float y, float z);
