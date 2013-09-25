@@ -4,11 +4,9 @@
  * 09/25/2013 - Assignment 3                  */
 
 #pragma once
-class Matrix
-{
+class Matrix {
 private:
 	float** matrix;
-	void    delMatrix(int rows, int cols, float** m);
 public:
 	int     rows;
 	int     cols;
@@ -22,7 +20,7 @@ public:
 	void    append(float* row, float* col);
 	Matrix* operator*(Matrix m);
 	Matrix* operator*(float s);
+	Matrix* operator/(float s);
 	Matrix* transpose();
-	void    print(char* name);
-	float*  toArray();
+	float* toArray();
 };

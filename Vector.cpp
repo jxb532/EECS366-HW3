@@ -3,9 +3,8 @@
  * Case Western Reserve University - EECS 366 *
  * 09/25/2013 - Assignment 3                  */
 
-#include "Vector.h"
-#include <stdio.h>
 #include <math.h>
+#include "Vector.h"
 
 Vector3::Vector3(void) {
 	this->vector[0] = 0;
@@ -31,6 +30,27 @@ Vector3 Vector3::operator*(float s) {
 		this->vector[2] * s);
 }
 
+Vector3 Vector3::operator/(float s) {
+	return Vector3(
+		this->vector[0] / s,
+		this->vector[1] / s,
+		this->vector[2] / s);
+}
+
+Vector3 Vector3::operator+(Vector3 &v) {
+	return Vector3(
+		this->vector[0] + v.vector[0],
+		this->vector[1] + v.vector[1],
+		this->vector[2] + v.vector[2]);
+}
+
+Vector3 Vector3::operator-(Vector3 &v) {
+	return Vector3(
+		this->vector[0] - v.vector[0],
+		this->vector[1] - v.vector[1],
+		this->vector[2] - v.vector[2]);
+}
+
 Vector3 Vector3::cross(Vector3* v) {
 	return Vector3(
 		this->vector[1]*v->vector[2]-this->vector[2]*v->vector[1],
@@ -49,20 +69,4 @@ float Vector3::magnitude() {
 		this->vector[0] * this->vector[0] +
 		this->vector[1] * this->vector[1] +
 		this->vector[2] * this->vector[2]);
-}
-
-void Vector3::print() {
-	printf("(%.2f, %.2f, %.2f)",
-		this->vector[0],
-		this->vector[1],
-		this->vector[2]);
-}
-
-
-void Vector3::print(char* name) {
-	printf("%s: (%.2f, %.2f, %.2f)",
-		name,
-		this->vector[0],
-		this->vector[1],
-		this->vector[2]);
 }

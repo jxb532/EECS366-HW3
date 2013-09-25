@@ -4,7 +4,6 @@
  * 09/25/2013 - Assignment 3                  */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include "Matrix.h"
 
 Matrix::Matrix() {
@@ -118,6 +117,16 @@ Matrix* Matrix::operator*(float s) {
 	return temp;
 }
 
+Matrix* Matrix::operator/(float s) {
+	Matrix* temp = new Matrix(this->rows, this->cols);
+	for (int i = 0; i < temp->rows; ++i) {
+		for (int j = 0; j < temp->cols; ++j) {
+			temp->matrix[i][j] /= s;
+		}
+	}
+	return temp;
+}
+
 Matrix* Matrix::transpose() {
 	Matrix* temp = new Matrix(this->rows, this->cols);
 	for (int i = 0; i < temp->rows; ++i) {
@@ -126,16 +135,6 @@ Matrix* Matrix::transpose() {
 		}
 	}
 	return temp;
-}
-
-void Matrix::print(char* name) {
-	printf("Matrix %s\n", name);
-	for (int i = 0; i < this->rows; ++i) {
-		for (int j = 0; j < this->cols; ++j) {
-			printf("%.2f\t", this->matrix[i][j]);
-		}
-		print("\n");
-	}
 }
 
 float* Matrix::toArray() {
