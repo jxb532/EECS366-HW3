@@ -118,6 +118,16 @@ Matrix* Matrix::operator*(float s) {
 	return temp;
 }
 
+Matrix* Matrix::operator/(float s) {
+	Matrix* temp = new Matrix(this->rows, this->cols);
+	for (int i = 0; i < temp->rows; ++i) {
+		for (int j = 0; j < temp->cols; ++j) {
+			temp->matrix[i][j] /= s;
+		}
+	}
+	return temp;
+}
+
 Matrix* Matrix::transpose() {
 	Matrix* temp = new Matrix(this->rows, this->cols);
 	for (int i = 0; i < temp->rows; ++i) {

@@ -3,6 +3,7 @@
  * Case Western Reserve University - EECS 366 *
  * 09/25/2013 - Assignment 3                  */
 
+#include <stdio.h>
 #include <math.h>
 #include "Vector.h"
 
@@ -69,4 +70,18 @@ float Vector3::magnitude() {
 		this->vector[0] * this->vector[0] +
 		this->vector[1] * this->vector[1] +
 		this->vector[2] * this->vector[2]);
+}
+
+void Vector3::print() {
+	printf("(%.2f, %.2f, %.2f)",
+		this->vector[0],
+		this->vector[1],
+		this->vector[2]);
+}
+
+void Vector3::print(char* name) {
+	printf("%f: (%.2f, %.2f, %.2f)", name,
+		this->vector[0],
+		this->vector[1],
+		this->vector[2]);
 }
