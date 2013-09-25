@@ -16,5 +16,7 @@ public:
 	Vector3 cross(Vector3* v);
 	float   dot(Vector3* v);
 	float   magnitude();
+	void    print();
+	void    print(char* name);
 	float   vector [LENGTH];
 };

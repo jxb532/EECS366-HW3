@@ -217,20 +217,15 @@ void	display(void) {
 	Matrix *rot2 = *rot1 * *localModel;
 	float *result = rot2->toArray();
 
-	for (int i = 0; i < 16; ++i) {
-		//modelviewMatrix[i] = result[i];
-		modelviewMatrix[i] = 4.0;
-	}
-
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(modelviewMatrix);
+	glLoadMatrixf(result);
 
 	//delete model; model = NULL;
 	//delete worldModel; worldModel = NULL;
 	//delete localModel; localModel = NULL;
 	//delete rot1; rot1 = NULL;
 	//delete rot2; rot2 = NULL;
-	delete [] result;
+	delete [] result; result = NULL;
 
 	// TODO calculate projection (view) matrix
 	if (NEEDS_TO_SNAP ==  ON) {
@@ -243,16 +238,31 @@ void	display(void) {
 			zView = 5;
 		} else {
 			// TODO extract the object's origin from modelMatrix, point camera in that direction
-			// getOriginFromModel(modelMatrix);
+			float xLoc = rot2->get(0, 3); 
+			float yLoc = rot2->get(1, 3);
+			float zLoc = rot2->get(2, 3);
 		}
 	}
 
-	float p[3] = {xViewPan, yViewPan, zView};
-	float n[3] = {xViewSwing - xViewPan, yViewSwing - yViewPan, -zView};
-	float v[3] = {0, 1, 0};
+	delete rot2; rot2 = NULL;
 
-	//TODO
-	//viewMatrix(p, n, v);
+	Vector3 *P = new Vector3(xViewPan, yViewPan, zView);
+	Vector3 *N = new Vector3(xViewSwing - xViewPan, yViewSwing - yViewPan, -zView);
+	Vector3 *V = new Vector3(0, 1, 0);
+
+	Matrix *view = viewMatrix(P, N, V);
+
+	result = view->toArray();
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(result);
+
+	delete P; P = NULL;
+	delete N; N = NULL;
+	delete V; V = NULL;
+	delete view; view = NULL;
+	delete [] result; result = NULL;
+
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
