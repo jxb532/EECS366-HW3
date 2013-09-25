@@ -190,18 +190,19 @@ void	display(void) {
 
 	// TODO do we load identity and do all of our rotations/translations every time,
 	// or do we just load the current model/view matrices and apply the most recent transform?
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	if (PERSPECTIVE) {
-		// I think this is useless...
+	
+	if (AXES == ON) {
+		drawAxes();
 	}
 
 	// we want to modify these matrices
 	// remember that these are in COLUMN MAJOR!!!
-	GLdouble modelviewMatrix[16];
-	GLdouble projMatrix[16];
-	glGetDoublev(GL_MODELVIEW, modelviewMatrix);
-	glGetDoublev(GL_PROJECTION, projMatrix);
+	GLfloat modelviewMatrix[16];
+	GLfloat projMatrix[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
+	glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
 
 	float mod [16];
 	for (int i = 0; i < 16; ++i) {
@@ -216,15 +217,15 @@ void	display(void) {
 	Matrix *rot2 = *rot1 * *localModel;
 	float *result = rot2->toArray();
 
-	for (int i = 0; i < 16; ++i) {
-		modelviewMatrix[i] = result[i];
-	}
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(result);
 
-	delete model; model = NULL;
-	delete worldModel; worldModel = NULL;
-	delete localModel; localModel = NULL;
-	delete rot1; rot1 = NULL;
-	delete [] result;
+	//delete model; model = NULL;
+	//delete worldModel; worldModel = NULL;
+	//delete localModel; localModel = NULL;
+	//delete rot1; rot1 = NULL;
+	//delete rot2; rot2 = NULL;
+	delete [] result; result = NULL;
 
 	// TODO calculate projection (view) matrix
 	if (NEEDS_TO_SNAP ==  ON) {
@@ -253,9 +254,8 @@ void	display(void) {
 
 	result = view->toArray();
 
-	for (int i = 0; i < 16; ++i) {
-		projMatrix[i] = result[i];
-	}
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(result);
 
 	delete P; P = NULL;
 	delete N; N = NULL;
@@ -266,7 +266,17 @@ void	display(void) {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	if (OBJECTS == ON) {
-		
+		drawObject();
+	}
+
+    // (Note that the origin is lower left corner)
+    // (Note also that the window spans (0,1) )
+    // Finish drawing, update the frame buffer, and swap buffers
+    glutSwapBuffers();
+}
+
+void	drawObject() {
+			
 		// Draw programatically
 		glColor3f(1, 1, 0);
 		for (int i = 0; i < faces; ++i) {
@@ -280,10 +290,10 @@ void	display(void) {
 				glVertex3f(vertex.x, vertex.y, vertex.z);
 			glEnd();
 		}
-	}
+}
 
-	if (AXES == ON) {
-		glColor3f(0,1,0);
+void	drawAxes() {
+			glColor3f(0,1,0);
 		glBegin(GL_LINES);
 			glVertex3f(AXIS_LENGTH,0.0,0.0);
 			glVertex3f(0.0,0.0,0.0);
@@ -298,12 +308,6 @@ void	display(void) {
 			glVertex3f(0.0,0.0,AXIS_LENGTH);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
-	}
-
-    // (Note that the origin is lower left corner)
-    // (Note also that the window spans (0,1) )
-    // Finish drawing, update the frame buffer, and swap buffers
-    glutSwapBuffers();
 }
 
 
@@ -586,18 +590,6 @@ void	keyboard(unsigned char key, int x, int y) {
 
 // Here's the main
 int main(int argc, char* argv[]) {
-
-	// WHYYYY???????????
-	float nums [9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-	Matrix test (3, 3, nums);
-
-	// OH GOD, THE HUMANITY
-	float nums2 [9] = {1, 4, 7, 2, 5, 8, 3, 6, 9};
-	Matrix test2 (3, 3, nums2);
-
-	Matrix *result = test * test2;
-	delete result; result = NULL;
-	
     // Initialize GLUT
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH); // Constant values passed as logical OR
