@@ -20,7 +20,7 @@ public:
 	float   get(int i, int j);
 	void    set(int i, int j, float value);
 	void    append(float* row, float* col);
-	Matrix* operator*(Matrix m);
+	Matrix* operator*(Matrix* m);
 	Matrix* operator*(float s);
 	Matrix* transpose();
 	void    print(char* name);
