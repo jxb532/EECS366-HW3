@@ -190,6 +190,7 @@ void	display(void) {
 
 	// TODO do we load identity and do all of our rotations/translations every time,
 	// or do we just load the current model/view matrices and apply the most recent transform?
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	if (PERSPECTIVE) {
@@ -198,10 +199,10 @@ void	display(void) {
 
 	// we want to modify these matrices
 	// remember that these are in COLUMN MAJOR!!!
-	GLdouble modelviewMatrix[16];
-	GLdouble projMatrix[16];
-	glGetDoublev(GL_MODELVIEW, modelviewMatrix);
-	glGetDoublev(GL_PROJECTION, projMatrix);
+	GLfloat modelviewMatrix[16];
+	GLfloat projMatrix[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
+	glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
 
 	float mod [16];
 	for (int i = 0; i < 16; ++i) {
@@ -217,14 +218,18 @@ void	display(void) {
 	float *result = rot2->toArray();
 
 	for (int i = 0; i < 16; ++i) {
-		modelviewMatrix[i] = result[i];
+		//modelviewMatrix[i] = result[i];
+		modelviewMatrix[i] = 4.0;
 	}
 
-	delete model; model = NULL;
-	delete worldModel; worldModel = NULL;
-	delete localModel; localModel = NULL;
-	delete rot1; rot1 = NULL;
-	delete rot2; rot2 = NULL;
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(modelviewMatrix);
+
+	//delete model; model = NULL;
+	//delete worldModel; worldModel = NULL;
+	//delete localModel; localModel = NULL;
+	//delete rot1; rot1 = NULL;
+	//delete rot2; rot2 = NULL;
 	delete [] result;
 
 	// TODO calculate projection (view) matrix
@@ -247,7 +252,7 @@ void	display(void) {
 	float v[3] = {0, 1, 0};
 
 	//TODO
-	// viewMatrix(p, n, v);
+	//viewMatrix(p, n, v);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -573,16 +578,16 @@ void	keyboard(unsigned char key, int x, int y) {
 // Here's the main
 int main(int argc, char* argv[]) {
 
-	// WHYYYY???????????
-	float nums [9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-	Matrix test (3, 3, nums);
+	//// WHYYYY???????????
+	//float nums [9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	//Matrix test (3, 3, nums);
 
-	// OH GOD, THE HUMANITY
-	float nums2 [9] = {1, 4, 7, 2, 5, 8, 3, 6, 9};
-	Matrix test2 (3, 3, nums2);
+	//// OH GOD, THE HUMANITY
+	//float nums2 [9] = {1, 4, 7, 2, 5, 8, 3, 6, 9};
+	//Matrix test2 (3, 3, nums2);
 
-	Matrix *result = test * test2;
-	delete result; result = NULL;
+	//Matrix *result = test * test2;
+	//delete result; result = NULL;
 	
     // Initialize GLUT
     glutInit(&argc, argv);
