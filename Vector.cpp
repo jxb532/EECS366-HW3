@@ -4,6 +4,7 @@
  * 09/25/2013 - Assignment 3                  */
 
 #include "Vector.h"
+#include <stdio.h>
 #include <math.h>
 
 Vector3::Vector3(void) {
@@ -48,4 +49,20 @@ float Vector3::magnitude() {
 		this->vector[0] * this->vector[0] +
 		this->vector[1] * this->vector[1] +
 		this->vector[2] * this->vector[2]);
+}
+
+void Vector3::print() {
+	printf("(%.2f, %.2f, %.2f)",
+		this->vector[0],
+		this->vector[1],
+		this->vector[2]);
+}
+
+
+void Vector3::print(char* name) {
+	printf("%s: (%.2f, %.2f, %.2f)",
+		name,
+		this->vector[0],
+		this->vector[1],
+		this->vector[2]);
 }

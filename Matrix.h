@@ -23,5 +23,6 @@ public:
 	Matrix* operator*(Matrix m);
 	Matrix* operator*(float s);
 	Matrix* transpose();
-	float* toArray();
+	void    print(char* name);
+	float*  toArray();
 };

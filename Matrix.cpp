@@ -4,6 +4,7 @@
  * 09/25/2013 - Assignment 3                  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "Matrix.h"
 
 Matrix::Matrix() {
@@ -125,6 +126,16 @@ Matrix* Matrix::transpose() {
 		}
 	}
 	return temp;
+}
+
+void Matrix::print(char* name) {
+	printf("Matrix %s\n", name);
+	for (int i = 0; i < this->rows; ++i) {
+		for (int j = 0; j < this->cols; ++j) {
+			printf("%.2f\t", this->matrix[i][j]);
+		}
+		print("\n");
+	}
 }
 
 float* Matrix::toArray() {
