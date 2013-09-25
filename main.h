@@ -18,6 +18,8 @@ typedef struct _faceStruct {
 // Main action methods.
 void   meshReader (char *filename,int sign);
 void   display(void);
+void   drawAxes();
+void   drawObject();
 void   resize(int x,int y);
 void   setRotation(int x, int y);
 void   setViewDistance(int y);
@@ -28,6 +30,6 @@ int    main(int argc, char* argv[]);
 
 // Graphical matrix generators.
 Matrix* modelMatrix(Matrix* r, Vector3* p);
-Matrix* viewMatrix(Matrix* P, Vector3* N, Vector3* V);
+Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V);
 Matrix* rotateMatrix(float theta, char axis);
 Matrix* translateMatrix(float x, float y, float z);

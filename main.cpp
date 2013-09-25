@@ -192,9 +192,9 @@ void	display(void) {
 	// or do we just load the current model/view matrices and apply the most recent transform?
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	if (PERSPECTIVE) {
-		// I think this is useless...
+	
+	if (AXES == ON) {
+		drawAxes();
 	}
 
 	// we want to modify these matrices
@@ -263,11 +263,20 @@ void	display(void) {
 	delete view; view = NULL;
 	delete [] result; result = NULL;
 
-
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	if (OBJECTS == ON) {
-		
+		drawObject();
+	}
+
+    // (Note that the origin is lower left corner)
+    // (Note also that the window spans (0,1) )
+    // Finish drawing, update the frame buffer, and swap buffers
+    glutSwapBuffers();
+}
+
+void	drawObject() {
+			
 		// Draw programatically
 		glColor3f(1, 1, 0);
 		for (int i = 0; i < faces; ++i) {
@@ -281,10 +290,10 @@ void	display(void) {
 				glVertex3f(vertex.x, vertex.y, vertex.z);
 			glEnd();
 		}
-	}
+}
 
-	if (AXES == ON) {
-		glColor3f(0,1,0);
+void	drawAxes() {
+			glColor3f(0,1,0);
 		glBegin(GL_LINES);
 			glVertex3f(AXIS_LENGTH,0.0,0.0);
 			glVertex3f(0.0,0.0,0.0);
@@ -299,12 +308,6 @@ void	display(void) {
 			glVertex3f(0.0,0.0,AXIS_LENGTH);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
-	}
-
-    // (Note that the origin is lower left corner)
-    // (Note also that the window spans (0,1) )
-    // Finish drawing, update the frame buffer, and swap buffers
-    glutSwapBuffers();
 }
 
 
@@ -587,18 +590,6 @@ void	keyboard(unsigned char key, int x, int y) {
 
 // Here's the main
 int main(int argc, char* argv[]) {
-
-	//// WHYYYY???????????
-	//float nums [9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-	//Matrix test (3, 3, nums);
-
-	//// OH GOD, THE HUMANITY
-	//float nums2 [9] = {1, 4, 7, 2, 5, 8, 3, 6, 9};
-	//Matrix test2 (3, 3, nums2);
-
-	//Matrix *result = test * test2;
-	//delete result; result = NULL;
-	
     // Initialize GLUT
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH); // Constant values passed as logical OR
