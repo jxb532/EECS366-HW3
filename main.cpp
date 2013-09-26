@@ -30,7 +30,7 @@
 #define LEFT_BUTTON 0
 #define PRESSED 0
 #define RELEASED 1
-#define TRANSLATE_STEP 5
+#define TRANSLATE_STEP 0.5
 #define ROTATE_STEP 5
 #define SCALING_STEP 1
 
@@ -43,17 +43,20 @@ char * filename = "teapot.obj";
 
 int window_width, window_height;    // Window dimensions
 int PERSPECTIVE = OFF;
-int AXES = OFF;
+int AXES = ON;
 int OBJECTS = ON;
 int LEFTDOWN = OFF;
 int RIGHTDOWN = OFF;
 int MIDDLEDOWN = OFF;
-int NEEDS_TO_SNAP = ON;
+int NEEDS_TO_SNAP = OFF;
 int SNAP_TO = ORIGIN;
 
 Matrix *localRot = new Matrix(3, 3);
 Matrix *worldRot = new Matrix(3, 3);
 Vector3 *translation = new Vector3();
+Vector3 *P = new Vector3(0, 0, 1);
+Vector3 *N = new Vector3(0, 0, -1);
+Vector3 *V = new Vector3(0, 1, 0);
 int lastX = 0;
 int lastY = 0;
 float xTrans = 0;
@@ -66,11 +69,11 @@ float xRotLocal = 0;
 float yRotLocal = 0;
 float zRotLocal = 0;
 float scaling = 1;
-float xViewSwing = 0;
-float yViewSwing = 0;
-float xViewPan = 0;
-float yViewPan = 0;
-float zView = 5;
+//float xViewSwing = 0;
+//float yViewSwing = 0;
+//float xViewPan = 0;
+//float yViewPan = 0;
+//float zView = 1;
 
 int verts, faces, norms;    // Number of vertices, faces and normals in the system
 point *vertList, *normList; // Vertex and Normal Lists
@@ -191,11 +194,6 @@ void	display(void) {
 	// TODO do we load identity and do all of our rotations/translations every time,
 	// or do we just load the current model/view matrices and apply the most recent transform?
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	
-	if (AXES == ON) {
-		drawAxes();
-	}
 
 	// we want to modify these matrices
 	// remember that these are in COLUMN MAJOR!!!
@@ -210,56 +208,73 @@ void	display(void) {
 	}
 
 	Matrix *model = new Matrix(4, 4, mod);
+	model->print("model");
 	Matrix *worldModel = modelMatrix(worldRot, translation);
 	Matrix *localModel = modelMatrix(localRot, &Vector3(0, 0, 0));
 
-	Matrix *rot1 = *worldModel * *model;
-	Matrix *rot2 = *rot1 * *localModel;
-	float *result = rot2->toArray();
+	Matrix *step1 = *model * localModel;
+	Matrix *step2 = *worldModel * step1;
+
+	float *result = step2->toArray();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(result);
 
-	//delete model; model = NULL;
-	//delete worldModel; worldModel = NULL;
-	//delete localModel; localModel = NULL;
-	//delete rot1; rot1 = NULL;
-	//delete rot2; rot2 = NULL;
+	worldModel->print("worldModel");
+	localModel->print("localModel");
+	step1->print("rot1");
+	step2->print("rot2");
+
+	delete worldRot; worldRot = new Matrix(3, 3);
+	delete localRot; localRot = new Matrix(3, 3);
+	delete translation; translation = new Vector3();
+	delete model; model = NULL;
+	delete worldModel; worldModel = NULL;
+	delete localModel; localModel = NULL;
+	delete step1; step1 = NULL;
 	delete [] result; result = NULL;
 
 	// TODO calculate projection (view) matrix
 	if (NEEDS_TO_SNAP ==  ON) {
 		NEEDS_TO_SNAP = OFF;
 		if (SNAP_TO == ORIGIN) {
-			xViewSwing = 0;
-			yViewSwing = 0;
-			xViewPan = 0;
-			yViewPan = 0;
-			zView = 5;
+			delete P;
+			P = new Vector3(0, 0, 1);
+
+			delete N;
+			N = new Vector3(0, 0, -1);
+
+			delete V;
+			V = new Vector3(0, 1, 0);
 		} else {
 			// TODO extract the object's origin from modelMatrix, point camera in that direction
-			float xLoc = rot2->get(0, 3); 
-			float yLoc = rot2->get(1, 3);
-			float zLoc = rot2->get(2, 3);
+			float xLoc = step2->get(0, 3); 
+			float yLoc = step2->get(1, 3);
+			float zLoc = step2->get(2, 3);
 		}
 	}
 
-	delete rot2; rot2 = NULL;
-
-	Vector3 *P = new Vector3(xViewPan, yViewPan, zView);
-	Vector3 *N = new Vector3(xViewSwing - xViewPan, yViewSwing - yViewPan, -zView);
-	Vector3 *V = new Vector3(0, 1, 0);
-
 	Matrix *view = viewMatrix(P, N, V);
-
 	result = view->toArray();
 
+	Matrix *proj = new Matrix(4, 4, mod);
+
 	glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
+	gluLookAt(0,0,1, 0,0,0, 0,1,0);
+	glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
+
+	// XXX
+	for (int i = 0; i < 16; ++i) {
+		result[i] = (float)projMatrix[i];
+	}
+
+	Matrix *res = new Matrix(4, 4, result);
+	res->print("should be");
+	view->print("Right now");
+
 	glLoadMatrixf(result);
 
-	delete P; P = NULL;
-	delete N; N = NULL;
-	delete V; V = NULL;
 	delete view; view = NULL;
 	delete [] result; result = NULL;
 
@@ -268,6 +283,17 @@ void	display(void) {
 	if (OBJECTS == ON) {
 		drawObject();
 	}
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+			
+	if (AXES == ON) {
+		drawAxes();
+	}
+
+	glLoadMatrixf(step2->toArray());
+	
+	delete step2; step2 = NULL;
 
     // (Note that the origin is lower left corner)
     // (Note also that the window spans (0,1) )
@@ -328,19 +354,58 @@ void	resize(int x,int y) {
 }
 
 void	setViewSwing(int x, int y) {
-	xViewSwing += (x - lastX);
-	yViewSwing += (y - lastY);
+	float xViewSwing = (x - lastX) * 0.03;
+	float yViewSwing = (y - lastY) * 0.03;
+
+	if (xViewSwing != 0) {
+		Vector3 nudgeX = (N->cross(V)).cross(N);
+		Vector3 newN = (*N + (nudgeX * xViewSwing)) / nudgeX.magnitude();
+		N->vector[0] = newN.vector[0];
+		N->vector[1] = newN.vector[1];
+		N->vector[2] = newN.vector[2];
+	}
+
+	if (yViewSwing != 0) {
+		Vector3 nudgeY = N->cross(V);
+		Vector3 newN = (*N + (nudgeY * yViewSwing)) / nudgeY.magnitude();
+		N->vector[0] = newN.vector[0];
+		N->vector[1] = newN.vector[1];
+		N->vector[2] = newN.vector[2];
+	}
+
 	glutPostRedisplay();
 }
 
 void	setViewPan(int x, int y) {
-	xViewPan += (x - lastX);
-	yViewPan += (y - lastY);
+	float xViewPan = (x - lastX) * 0.03;
+	float yViewPan = (y - lastY) * 0.03;
+
+	if (xViewPan != 0) {
+		Vector3 nudgeX = N->cross(V);
+		nudgeX = (nudgeX / nudgeX.magnitude()) * xViewPan;
+		Vector3 newP = *P + nudgeX;
+		P->vector[0] = newP.vector[0];
+		P->vector[1] = newP.vector[1];
+		P->vector[2] = newP.vector[2];
+	}
+
+	if (yViewPan != 0) {
+		Vector3 nudgeY = (*V / (V->magnitude())) * yViewPan;
+		Vector3 newP = *P - nudgeY;
+		P->vector[0] = newP.vector[0];
+		P->vector[1] = newP.vector[1];
+		P->vector[2] = newP.vector[2];
+	}
+
 	glutPostRedisplay();
 }
 
 void	setViewDistance(int y) {
-	zView += (y - lastY);
+	float zView = (y - lastY) * 0.03;
+	Vector3 newP = *P + (*P * zView);
+	P->vector[0] = newP.vector[0];
+	P->vector[1] = newP.vector[1];
+	P->vector[2] = newP.vector[2];
 	glutPostRedisplay();
 }
 
@@ -471,7 +536,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case '[':
 		// negative x rotation (world)
 		rotate = rotateMatrix(-ROTATE_STEP, 'x');
-		result = *rotate * *worldRot;
+		result = *rotate * worldRot;
 		delete worldRot; worldRot = NULL;
 		delete rotate; rotate = NULL;
 		worldRot = result;
@@ -479,7 +544,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case ']':
 		// positive x rotation (world)
 		rotate = rotateMatrix(ROTATE_STEP, 'x');
-		result = *rotate * *worldRot;
+		result = *rotate * worldRot;
 		delete worldRot; worldRot = NULL;
 		delete rotate; rotate = NULL;
 		worldRot = result;
@@ -487,7 +552,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case ';':
 		// negative y rotation (world)
 		rotate = rotateMatrix(-ROTATE_STEP, 'y');
-		result = *rotate * *worldRot;
+		result = *rotate * worldRot;
 		delete worldRot; worldRot = NULL;
 		delete rotate; rotate = NULL;
 		worldRot = result;
@@ -495,7 +560,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case '\'':
 		// positive y rotation (world)
 		rotate = rotateMatrix(ROTATE_STEP, 'y');
-		result = *rotate * *worldRot;
+		result = *rotate * worldRot;
 		delete worldRot; worldRot = NULL;
 		delete rotate; rotate = NULL;
 		worldRot = result;
@@ -503,7 +568,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case '.':
 		// negative z rotation (world)
 		rotate = rotateMatrix(-ROTATE_STEP, 'z');
-		result = *rotate * *worldRot;
+		result = *rotate * worldRot;
 		delete worldRot; worldRot = NULL;
 		delete rotate; rotate = NULL;
 		worldRot = result;
@@ -511,7 +576,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case '/':
 		// positive z rotation (world)
 		rotate = rotateMatrix(ROTATE_STEP, 'z');
-		result = *rotate * *worldRot;
+		result = *rotate * worldRot;
 		delete worldRot; worldRot = NULL;
 		delete rotate; rotate = NULL;
 		worldRot = result;
@@ -527,7 +592,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case 'i':
 		// negative x rotation (local)
 		rotate = rotateMatrix(-ROTATE_STEP, 'x');
-		result = *localRot * *rotate;
+		result = *localRot * rotate;
 		delete localRot; localRot = NULL;
 		delete rotate; rotate = NULL;
 		localRot = result;
@@ -535,7 +600,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case 'o':
 		// poitive x rotation (local)
 		rotate = rotateMatrix(ROTATE_STEP, 'x');
-		result = *localRot * *rotate;
+		result = *localRot * rotate;
 		delete localRot; localRot = NULL;
 		delete rotate; rotate = NULL;
 		localRot = result;
@@ -543,7 +608,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case 'k':
 		// negative y rotation (local)
 		rotate = rotateMatrix(-ROTATE_STEP, 'y');
-		result = *localRot * *rotate;
+		result = *localRot * rotate;
 		delete localRot; localRot = NULL;
 		delete rotate; rotate = NULL;
 		localRot = result;
@@ -551,7 +616,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case 'l':
 		// positive y rotation (local)
 		rotate = rotateMatrix(ROTATE_STEP, 'y');
-		result = *localRot * *rotate;
+		result = *localRot * rotate;
 		delete localRot; localRot = NULL;
 		delete rotate; rotate = NULL;
 		localRot = result;
@@ -559,7 +624,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case 'm':
 		// negative z rotation (local)
 		rotate = rotateMatrix(-ROTATE_STEP, 'z');
-		result = *localRot * *rotate;
+		result = *localRot * rotate;
 		delete localRot; localRot = NULL;
 		delete rotate; rotate = NULL;
 		localRot = result;
@@ -567,7 +632,7 @@ void	keyboard(unsigned char key, int x, int y) {
 	case ',':
 		// positive z rotation (local)
 		rotate = rotateMatrix(ROTATE_STEP, 'z');
-		result = *localRot * *rotate;
+		result = *localRot * rotate;
 		delete localRot; localRot = NULL;
 		delete rotate; rotate = NULL;
 		localRot = result;
@@ -636,8 +701,8 @@ Matrix* viewMatrix(Vector3* P, Vector3* N, Vector3* V) {
 	Matrix *m = new Matrix(4,4);
 
 	Vector3 n = *N * (-1.0 / N->magnitude());
-	Vector3 u = (V->cross(&(*N * -1.0))) * ((V->cross(N)).magnitude());
-	Vector3 v = n.cross(&v);
+	Vector3 u = (V->cross(&(*N * -1.0))) * (1 / ((V->cross(N)).magnitude()));
+	Vector3 v = n.cross(&u);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -659,7 +724,7 @@ Matrix* rotateMatrix(float thetaDeg, char axis) {
 	float thetaRad = thetaDeg * (3.14159 / 180.0);
 	float matrixX[9] = {1, 0, 0, 0, cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad)};
 	float matrixY[9] = {cos(thetaRad), 0, -1.0 * sin(thetaRad), 0, 1, 0, sin(thetaRad), 0, cos(thetaRad)};
-	float matrixZ[9] = {cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad), 0, 0, 1};
+	float matrixZ[9] = {cos(thetaRad), sin(thetaRad), 0, -1.0 * sin(thetaRad), cos(thetaRad), 0, 0, 0, 1};
 
 	switch (axis) {
 	case 'x':
