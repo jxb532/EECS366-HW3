@@ -32,7 +32,7 @@
 #define RELEASED 1
 #define TRANSLATE_STEP 0.5
 #define ROTATE_STEP 5
-#define SCALING_STEP 1
+#define SCALING_STEP 0.1
 
 // XXX old
 #define ROT_SCALE 0.3
@@ -69,11 +69,6 @@ float xRotLocal = 0;
 float yRotLocal = 0;
 float zRotLocal = 0;
 float scaling = 1;
-//float xViewSwing = 0;
-//float yViewSwing = 0;
-//float xViewPan = 0;
-//float yViewPan = 0;
-//float zView = 1;
 
 int verts, faces, norms;    // Number of vertices, faces and normals in the system
 point *vertList, *normList; // Vertex and Normal Lists
@@ -100,9 +95,9 @@ void meshReader (char *filename,int sign) {
   while(!feof(fp)) {
       fscanf(fp,"%c %f %f %f\n",&letter,&x,&y,&z);
       if (letter == 'v') {
-	  ++verts;
+	  verts++;
 	} else {
-	  ++faces;
+	  faces++;
 	}
    }
 
@@ -119,7 +114,7 @@ void meshReader (char *filename,int sign) {
   fp = fopen(filename, "r");
 
   // Read the veritces
-  for(i = 0;i < verts;++i) {
+  for(i = 0;i < verts;i++) {
       fscanf(fp,"%c %f %f %f\n",&letter,&x,&y,&z);
       vertList[i].x = x;
       vertList[i].y = y;
@@ -127,7 +122,7 @@ void meshReader (char *filename,int sign) {
     }
 
   // Read the faces
-  for(i = 0;i < faces;++i) {
+  for(i = 0;i < faces;i++) {
       fscanf(fp,"%c %d %d %d\n",&letter,&ix,&iy,&iz);
       faceList[i].v1 = ix - 1;
       faceList[i].v2 = iy - 1;
@@ -138,12 +133,12 @@ void meshReader (char *filename,int sign) {
 
   // The part below calculates the normals of each vertex
   normCount = (int *)malloc(sizeof(int)*verts);
-  for (i = 0;i < verts;++i) {
+  for (i = 0;i < verts;i++) {
       normList[i].x = normList[i].y = normList[i].z = 0.0;
       normCount[i] = 0;
     }
 
-  for(i = 0;i < faces;++i) {
+  for(i = 0;i < faces;i++) {
       v1.x = vertList[faceList[i].v2].x - vertList[faceList[i].v1].x;
       v1.y = vertList[faceList[i].v2].y - vertList[faceList[i].v1].y;
       v1.z = vertList[faceList[i].v2].z - vertList[faceList[i].v1].z;
@@ -170,19 +165,17 @@ void meshReader (char *filename,int sign) {
       normList[faceList[i].v3].x = normList[faceList[i].v3].x + crossP.x;
       normList[faceList[i].v3].y = normList[faceList[i].v3].y + crossP.y;
       normList[faceList[i].v3].z = normList[faceList[i].v3].z + crossP.z;
-      normCount[faceList[i].v1++];
-      normCount[faceList[i].v2++];
-      normCount[faceList[i].v3++];
+      normCount[faceList[i].v1]++;
+      normCount[faceList[i].v2]++;
+      normCount[faceList[i].v3]++;
     }
-  for (i = 0;i < verts;++i) {
+  for (i = 0;i < verts;i++) {
       normList[i].x = (float)sign*normList[i].x / (float)normCount[i];
       normList[i].y = (float)sign*normList[i].y / (float)normCount[i];
       normList[i].z = (float)sign*normList[i].z / (float)normCount[i];
     }
 
 }
-
-
 
 // The display function. It is called whenever the window needs
 // redrawing (ie: overlapping window moves, resize, maximize)
@@ -215,7 +208,13 @@ void	display(void) {
 	Matrix *step1 = *model * localModel;
 	Matrix *step2 = *worldModel * step1;
 
-	float *result = step2->toArray();
+	doSnap(step2);
+
+	Matrix *view = viewMatrix(P, N, V);
+	Matrix *step3 = *view * step2;
+
+
+	float *result = step3->toArray();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(result);
@@ -232,10 +231,34 @@ void	display(void) {
 	delete worldModel; worldModel = NULL;
 	delete localModel; localModel = NULL;
 	delete step1; step1 = NULL;
+	delete step3; step3 = NULL;
 	delete [] result; result = NULL;
 
-	// TODO calculate projection (view) matrix
-	if (NEEDS_TO_SNAP ==  ON) {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	if (OBJECTS == ON) {
+		drawObject();
+	}
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(view->toArray());
+			
+	if (AXES == ON) {
+		drawAxes();
+	}
+
+	glLoadMatrixf(step2->toArray());
+	delete view; view = NULL;
+	delete step2; step2 = NULL;
+
+    // (Note that the origin is lower left corner)
+    // (Note also that the window spans (0,1) )
+    // Finish drawing, update the frame buffer, and swap buffers
+    glutSwapBuffers();
+}
+
+void doSnap(Matrix* model) {
+		if (NEEDS_TO_SNAP ==  ON) {
 		NEEDS_TO_SNAP = OFF;
 		if (SNAP_TO == ORIGIN) {
 			delete P;
@@ -248,90 +271,43 @@ void	display(void) {
 			V = new Vector3(0, 1, 0);
 		} else {
 			// TODO extract the object's origin from modelMatrix, point camera in that direction
-			float xLoc = step2->get(0, 3); 
-			float yLoc = step2->get(1, 3);
-			float zLoc = step2->get(2, 3);
+			float xLoc = model->get(0, 3); 
+			float yLoc = model->get(1, 3);
+			float zLoc = model->get(2, 3);
 		}
 	}
-
-	Matrix *view = viewMatrix(P, N, V);
-	result = view->toArray();
-
-	Matrix *proj = new Matrix(4, 4, mod);
-
-	glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
-	gluLookAt(0,0,1, 0,0,0, 0,1,0);
-	glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
-
-	// XXX
-	for (int i = 0; i < 16; ++i) {
-		result[i] = (float)projMatrix[i];
-	}
-
-	Matrix *res = new Matrix(4, 4, result);
-	res->print("should be");
-	view->print("Right now");
-
-	glLoadMatrixf(result);
-
-	delete view; view = NULL;
-	delete [] result; result = NULL;
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	if (OBJECTS == ON) {
-		drawObject();
-	}
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-			
-	if (AXES == ON) {
-		drawAxes();
-	}
-
-	glLoadMatrixf(step2->toArray());
-	
-	delete step2; step2 = NULL;
-
-    // (Note that the origin is lower left corner)
-    // (Note also that the window spans (0,1) )
-    // Finish drawing, update the frame buffer, and swap buffers
-    glutSwapBuffers();
 }
 
 void	drawObject() {
-			
-		// Draw programatically
+	// Draw programatically
 		glColor3f(1, 1, 0);
-		for (int i = 0; i < faces; ++i) {
+		for (int i = 0; i < faces; i++) {
 			point vertex;
 			glBegin(GL_POLYGON);
 				vertex = vertList[faceList[i].v1];
-				glVertex3f(vertex.x, vertex.y, vertex.z);
+				glVertex3f(vertex.x / scaling, vertex.y / scaling, vertex.z / scaling);
 				vertex = vertList[faceList[i].v2];
-				glVertex3f(vertex.x, vertex.y, vertex.z);
+				glVertex3f(vertex.x / scaling, vertex.y / scaling, vertex.z / scaling);
 				vertex = vertList[faceList[i].v3];
-				glVertex3f(vertex.x, vertex.y, vertex.z);
+				glVertex3f(vertex.x / scaling, vertex.y / scaling, vertex.z / scaling);
 			glEnd();
 		}
 }
 
 void	drawAxes() {
-			glColor3f(0,1,0);
+		glColor3f(0,1,0);
 		glBegin(GL_LINES);
-			glVertex3f(AXIS_LENGTH,0.0,0.0);
+			glVertex3f(AXIS_LENGTH / scaling,0.0,0.0);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 		glColor3f(1,0,0);
 		glBegin(GL_LINES);
-			glVertex3f(0.0,AXIS_LENGTH,0.0);
+			glVertex3f(0.0,AXIS_LENGTH / scaling,0.0);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 		glColor3f(0,0,1);
 		glBegin(GL_LINES);
-			glVertex3f(0.0,0.0,AXIS_LENGTH);
+			glVertex3f(0.0,0.0,AXIS_LENGTH / scaling);
 			glVertex3f(0.0,0.0,0.0);
 		glEnd();
 }
@@ -357,17 +333,17 @@ void	setViewSwing(int x, int y) {
 	float xViewSwing = (x - lastX) * 0.03;
 	float yViewSwing = (y - lastY) * 0.03;
 
-	if (xViewSwing != 0) {
-		Vector3 nudgeX = (N->cross(V)).cross(N);
-		Vector3 newN = (*N + (nudgeX * xViewSwing)) / nudgeX.magnitude();
+	if (yViewSwing != 0) {
+		Vector3 nudgeY = (N->cross(V)).cross(N);
+		Vector3 newN = (*N + (nudgeY * yViewSwing)) / nudgeY.magnitude();
 		N->vector[0] = newN.vector[0];
 		N->vector[1] = newN.vector[1];
 		N->vector[2] = newN.vector[2];
 	}
 
-	if (yViewSwing != 0) {
-		Vector3 nudgeY = N->cross(V);
-		Vector3 newN = (*N + (nudgeY * yViewSwing)) / nudgeY.magnitude();
+	if (xViewSwing != 0) {
+		Vector3 nudgeX = N->cross(V);
+		Vector3 newN = (*N + (nudgeX * xViewSwing)) / nudgeX.magnitude();
 		N->vector[0] = newN.vector[0];
 		N->vector[1] = newN.vector[1];
 		N->vector[2] = newN.vector[2];
@@ -390,8 +366,9 @@ void	setViewPan(int x, int y) {
 	}
 
 	if (yViewPan != 0) {
-		Vector3 nudgeY = (*V / (V->magnitude())) * yViewPan;
-		Vector3 newP = *P - nudgeY;
+		Vector3 nudgeY = N->cross(&(N->cross(V)));
+		nudgeY = (nudgeY / nudgeY.magnitude()) * yViewPan;
+		Vector3 newP = *P + nudgeY;
 		P->vector[0] = newP.vector[0];
 		P->vector[1] = newP.vector[1];
 		P->vector[2] = newP.vector[2];
@@ -402,7 +379,7 @@ void	setViewPan(int x, int y) {
 
 void	setViewDistance(int y) {
 	float zView = (y - lastY) * 0.03;
-	Vector3 newP = *P + (*P * zView);
+	Vector3 newP = *P + ((*N / N->magnitude()) * zView);
 	P->vector[0] = newP.vector[0];
 	P->vector[1] = newP.vector[1];
 	P->vector[2] = newP.vector[2];
@@ -583,11 +560,11 @@ void	keyboard(unsigned char key, int x, int y) {
 		break;
 	case '=':
 		// increase uniform scaling (world)
-		scaling += SCALING_STEP;
+		scaling -= SCALING_STEP;
 		break;
 	case '-':
 		// decrease uniform scaling (world)
-		scaling -= SCALING_STEP;
+		scaling += SCALING_STEP;
 		break;
 	case 'i':
 		// negative x rotation (local)

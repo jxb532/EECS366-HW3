@@ -18,6 +18,7 @@ typedef struct _faceStruct {
 // Main action methods.
 void   meshReader (char *filename,int sign);
 void   display(void);
+void   doSnap(Matrix* model);
 void   drawAxes();
 void   drawObject();
 void   resize(int x,int y);
