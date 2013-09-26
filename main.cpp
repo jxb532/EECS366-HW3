@@ -1,14 +1,7 @@
-/* 
- * EECS 366 Assignment # 3
- *
- * Wes Rupert
- * wkr3
- *
- * Joshua Braun
- * jxb532
- *
- * 25 Sept 2013
- */
+/* Wes Rupert - wesrupert@outlook.com (wkr3)  *
+ * Josh Braun - jxb532@case.edu (jxb532)      *
+ * Case Western Reserve University - EECS 366 *
+ * 09/25/2013 - Assignment 3                  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,10 +27,6 @@
 #define ROTATE_STEP 5
 #define SCALING_STEP 0.1
 
-// XXX old
-#define ROT_SCALE 0.3
-#define ZOOM_SCALE 0.02
-
 // Global variables
 char * filename = "teapot.obj";
 
@@ -59,15 +48,6 @@ Vector3 *N = new Vector3(0, 0, -1);
 Vector3 *V = new Vector3(0, 1, 0);
 int lastX = 0;
 int lastY = 0;
-float xTrans = 0;
-float yTrans = 0;
-float zTrans = 0;
-float xRotWorld = 0;
-float yRotWorld = 0;
-float zRotWorld = 0;
-float xRotLocal = 0;
-float yRotLocal = 0;
-float zRotLocal = 0;
 float scaling = 1;
 
 int verts, faces, norms;    // Number of vertices, faces and normals in the system
@@ -184,24 +164,17 @@ void	display(void) {
     // Clear the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// TODO do we load identity and do all of our rotations/translations every time,
-	// or do we just load the current model/view matrices and apply the most recent transform?
 	glMatrixMode(GL_MODELVIEW);
 
-	// we want to modify these matrices
-	// remember that these are in COLUMN MAJOR!!!
 	GLfloat modelviewMatrix[16];
-	GLfloat projMatrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewMatrix);
-	glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
 
-	float mod [16];
+	float modelArray [16];
 	for (int i = 0; i < 16; ++i) {
-		mod[i] = (float)modelviewMatrix[i];
+		modelArray[i] = (float)modelviewMatrix[i];
 	}
 
-	Matrix *model = new Matrix(4, 4, mod);
-	model->print("model");
+	Matrix *model = new Matrix(4, 4, modelArray);
 	Matrix *worldModel = modelMatrix(worldRot, translation);
 	Matrix *localModel = modelMatrix(localRot, &Vector3(0, 0, 0));
 
@@ -213,16 +186,8 @@ void	display(void) {
 	Matrix *view = viewMatrix(P, N, V);
 	Matrix *step3 = *view * step2;
 
-
 	float *result = step3->toArray();
-
-	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(result);
-
-	worldModel->print("worldModel");
-	localModel->print("localModel");
-	step1->print("rot1");
-	step2->print("rot2");
 
 	delete worldRot; worldRot = new Matrix(3, 3);
 	delete localRot; localRot = new Matrix(3, 3);
@@ -240,7 +205,6 @@ void	display(void) {
 		drawObject();
 	}
 
-	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(view->toArray());
 			
 	if (AXES == ON) {
@@ -261,19 +225,14 @@ void doSnap(Matrix* model) {
 		if (NEEDS_TO_SNAP ==  ON) {
 		NEEDS_TO_SNAP = OFF;
 		if (SNAP_TO == ORIGIN) {
-			delete P;
-			P = new Vector3(0, 0, 1);
-
-			delete N;
-			N = new Vector3(0, 0, -1);
-
-			delete V;
-			V = new Vector3(0, 1, 0);
+			Vector3 newN = *P * -1.0;
+			N->vector[0] = newN.vector[0];
+			N->vector[1] = newN.vector[1];
+			N->vector[2] = newN.vector[2];
 		} else {
-			// TODO extract the object's origin from modelMatrix, point camera in that direction
-			float xLoc = model->get(0, 3); 
-			float yLoc = model->get(1, 3);
-			float zLoc = model->get(2, 3);
+			N->vector[0] = -P->vector[0] + model->get(0, 3); 
+			N->vector[1] = -P->vector[1] + model->get(1, 3);
+			N->vector[2] = -P->vector[2] + model->get(2, 3);
 		}
 	}
 }
